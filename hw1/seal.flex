@@ -75,7 +75,7 @@ le "<="
 annotation_one "//"[^\n]*
 type "Int"|"Float"|"String"|"Bool"|"Void"
 INT_CONST 0x([0-9a-fA-F]+)|([0-9]+)
-FLOAT_CONST 0x([0-9a-fA-F]+)"."([0-9a-fA-F]+)|([0-9]+)"."([0-9]+)
+FLOAT_CONST ([0-9]+)"."([0-9]+)
 BOOL_CONST true|false
 OBJECT_CONST [a-z]([A-Za-z0-9_]*)
 symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"["|"]"|"{"|"}"|","
@@ -84,8 +84,8 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"["|"]"|"
 
 "`"[^`]*"`" {
   s = new char[512];
-  strncpy(s, yytext+1, strlen(yytext)-2);
-  for (int i=0;i<strlen(s);i++)
+  strncpy(s, yytext + 1, strlen(yytext) - 2);
+  for (int i = 0; i < strlen(s); i ++)
   {
     if (s[i] == '\n') curr_lineno ++;
   }
@@ -108,7 +108,6 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"["|"]"|"
   {
     flag1 = 1;
     strcpy(seal_yylval.error_msg, "String contains null character '\\0'");
-    return (ERROR);
   }
   else if (!flag)
   {
@@ -137,13 +136,12 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"["|"]"|"
 }
 
 "\n" {
+  curr_lineno ++;
   if (flag0)
   {
     flag1 = 1;
-    strcpy(seal_yylval.error_msg, "unescaped newline");
-    return (ERROR);
+    strcpy(seal_yylval.error_msg, "newline in quotation must use a '\\'");
   }
-  curr_lineno ++;
 }
 
 {annotation_one} {}
@@ -224,6 +222,7 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"["|"]"|"
       {
         delete []s;
         flag1 = 0;
+        return (ERROR);
       }
     }
   }
@@ -321,7 +320,7 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"["|"]"|"
   if (flag0) s = strcat(s, yytext);
   else if (!flag)
   {
-    seal_yylval.boolean = (strcmp(yytext, "true"))?0:1;
+    seal_yylval.boolean = (strcmp(yytext, "true")) ? 0 : 1;
     return (CONST_BOOL);
   }
 }
@@ -339,7 +338,54 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"["|"]"|"
   if (flag0) s = strcat(s, yytext);
   else if (!flag)
   {
-    seal_yylval.symbol = inttable.add_string(yytext);
+    char *s0;
+    s0 = new char[512];
+    strcpy(s0, yytext);
+    if (strlen(s0) > 2 && s0[0] == '0')
+    {
+      if (s0[1] == 'X' || s0[1] == 'x')
+      {
+        int value = 0, mul = 1, tmp;
+        for (int i = strlen(s0) - 1; i >= 2; i --)
+        {
+          if (s0[i] == '0') value += 0 * mul;
+          else if (s0[i] == '1') value += 1 * mul;
+          else if (s0[i] == '2') value += 2 * mul;
+          else if (s0[i] == '3') value += 3 * mul;
+          else if (s0[i] == '4') value += 4 * mul;
+          else if (s0[i] == '5') value += 5 * mul;
+          else if (s0[i] == '6') value += 6 * mul;
+          else if (s0[i] == '7') value += 7 * mul;
+          else if (s0[i] == '8') value += 8 * mul;
+          else if (s0[i] == '9') value += 9 * mul;
+          else if (s0[i] == 'a' || s0[i] == 'A') value += 10 * mul;
+          else if (s0[i] == 'b' || s0[i] == 'B') value += 11 * mul;
+          else if (s0[i] == 'c' || s0[i] == 'C') value += 12 * mul;
+          else if (s0[i] == 'd' || s0[i] == 'D') value += 13 * mul;
+          else if (s0[i] == 'e' || s0[i] == 'E') value += 14 * mul;
+          else if (s0[i] == 'f' || s0[i] == 'F') value += 15 * mul;
+          mul *= 16;
+        }
+        string S = "";
+        while (value > 0)
+        {
+          tmp = value % 10;
+          value /= 10;
+          if (tmp == 0) S = "0" + S;
+          else if (tmp == 1) S = "1" + S;
+          else if (tmp == 2) S = "2" + S;
+          else if (tmp == 3) S = "3" + S;
+          else if (tmp == 4) S = "4" + S;
+          else if (tmp == 5) S = "5" + S;
+          else if (tmp == 6) S = "6" + S;
+          else if (tmp == 7) S = "7" + S;
+          else if (tmp == 8) S = "8" + S;
+          else if (tmp == 9) S = "9" + S;
+        }
+        strcpy(s0, S.c_str());
+      }
+    }
+    seal_yylval.symbol = inttable.add_string(s0);
 	  return (CONST_INT);
   }
 }
