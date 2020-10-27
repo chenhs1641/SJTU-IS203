@@ -1,10 +1,9 @@
 #!/bin/bash
-cd ./test
+cd test
 for filename in *.seal; do
     echo "--------Test using" $filename "--------"
     ../lexer $filename > tempfile
-    ../lexer0 $filename > tempfile0
-    diff tempfile tempfile0
+    diff tempfile ../test-answer/$filename.out > /dev/null
     if [ $? -eq 0 ] ; then
         echo passed
     else
@@ -12,5 +11,4 @@ for filename in *.seal; do
     fi
 done
 rm -f tempfile
-rm -f tempfile0
 cd ..

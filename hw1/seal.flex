@@ -78,28 +78,33 @@ INT_CONST 0x([0-9a-fA-F]+)|([0-9]+)
 FLOAT_CONST ([0-9]+)"."([0-9]+)
 BOOL_CONST true|false
 OBJECT_CONST [a-z]([A-Za-z0-9_]*)
+false_OBJECT_CONST [A-Z]([A-Za-z0-9_]*)
 symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"["|"]"|"{"|"}"|","
 
 %%
 
 "`"[^`]*"`" {
-  s = new char[512];
-  strncpy(s, yytext + 1, strlen(yytext) - 2);
-  for (int i = 0; i < strlen(s); i ++)
-  {
-    if (s[i] == '\n') curr_lineno ++;
-  }
-  if (strlen(s) <= 256)
-  {
-    seal_yylval.symbol = stringtable.add_string(s);
-    delete []s;
-    return (CONST_STRING);
-  }
+  if (flag0) s = strcat(s, yytext);
   else
   {
-    delete []s;
-    strcpy(seal_yylval.error_msg, "String too long");
-    return ERROR;
+    s = new char[512];
+    strncpy(s, yytext + 1, strlen(yytext) - 2);
+    for (int i = 0; i < strlen(s); i ++)
+    {
+      if (s[i] == '\n') curr_lineno ++;
+    }
+    if (strlen(s) <= 256)
+    {
+      seal_yylval.symbol = stringtable.add_string(s);
+      delete []s;
+      return (CONST_STRING);
+    }
+    else
+    {
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String too long");
+      return ERROR;
+    }
   }
 }
 
@@ -174,6 +179,42 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"["|"]"|"
   }
 }
 
+"\\b" {
+  if (flag0) s = strcat(s, "\b");
+  else if (!flag)
+  {
+	  strcpy(seal_yylval.error_msg, yytext); 
+	  return (ERROR);
+  }
+}
+
+"\\f" {
+  if (flag0) s = strcat(s, "\f");
+  else if (!flag)
+  {
+	  strcpy(seal_yylval.error_msg, yytext); 
+	  return (ERROR);
+  }
+}
+
+"\\'" {
+  if (flag0) s = strcat(s, "\'");
+  else if (!flag)
+  {
+	  strcpy(seal_yylval.error_msg, yytext); 
+	  return (ERROR);
+  }
+}
+
+"\\?" {
+  if (flag0) s = strcat(s, "\?");
+  else if (!flag)
+  {
+	  strcpy(seal_yylval.error_msg, yytext); 
+	  return (ERROR);
+  }
+}
+
 "\\\"" {
   if (flag0) s = strcat(s, "\"");
   else if (!flag)
@@ -234,6 +275,14 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"["|"]"|"
 
 "\t" {
   if (flag0) s = strcat(s, yytext);
+}
+
+"\\" {
+  if (!flag0 && !flag)
+  {
+	  strcpy(seal_yylval.error_msg, yytext); 
+	  return (ERROR);
+  }
 }
 
 {symbol}  {
@@ -386,6 +435,7 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"["|"]"|"
       }
     }
     seal_yylval.symbol = inttable.add_string(s0);
+    delete []s0;
 	  return (CONST_INT);
   }
 }
@@ -406,6 +456,17 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"["|"]"|"
     seal_yylval.symbol = idtable.add_string(yytext);
     return (TYPEID);
   } 
+}
+
+{false_OBJECT_CONST} {
+  if (flag0) s = strcat(s, yytext);
+  else if (!flag)
+  {
+    string s0 = "illegal TYPEID ";
+    s0 += yytext;
+    strcpy(seal_yylval.error_msg, s0.c_str());
+	  return (ERROR);
+  }
 }
 
 .	{
