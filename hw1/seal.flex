@@ -79,7 +79,7 @@ FLOAT_CONST ([0-9]+)"."([0-9]+)
 BOOL_CONST true|false
 OBJECT_CONST [a-z]([A-Za-z0-9_]*)
 false_OBJECT_CONST [A-Z]([A-Za-z0-9_]*)
-symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"["|"]"|"{"|"}"|","
+symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"{"|"}"|","|":"
 
 %%
 
@@ -287,7 +287,7 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"["|"]"|"
 
 {symbol}  {
   if (flag0) s = strcat(s, yytext);
-  else if (!flag) printf("#%d '%s'\n", curr_lineno, yytext);
+  else if (!flag) return (int(yytext[0]));
 }
 
 {if} {
