@@ -434,8 +434,8 @@ static void yynoreturn yy_fatal_error ( const char* msg  );
 /* %% [3.0] code to copy yytext_ptr to yytext[] goes here, if %array \ */\
 	(yy_c_buf_p) = yy_cp;
 /* %% [4.0] data tables for the DFA and the user's section 1 definitions go here */
-#define YY_NUM_RULES 43
-#define YY_END_OF_BUFFER 44
+#define YY_NUM_RULES 44
+#define YY_END_OF_BUFFER 45
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -443,21 +443,21 @@ struct yy_trans_info
 	flex_int32_t yy_verify;
 	flex_int32_t yy_nxt;
 	};
-static const flex_int16_t yy_accept[118] =
+static const flex_int16_t yy_accept[116] =
     {   0,
-        0,    0,   44,   42,   18,    5,   17,   20,   16,   20,
+        0,    0,   45,   43,   18,    5,   17,   20,   16,   20,
        20,   20,   20,   38,   38,   20,   20,   20,   41,   41,
-       41,   41,   41,   41,   19,   42,   39,   39,   39,   39,
+       41,   41,   41,   41,   19,    1,   39,   39,   39,   39,
        39,   39,   39,   39,   39,   39,   20,   33,   30,    8,
-        7,    6,    0,   38,    0,   35,   32,   34,   41,   41,
-       41,   41,   41,   41,    4,   14,   12,    2,   13,   15,
-       10,   11,    3,    9,    0,    1,   39,   39,   39,   39,
-       39,   39,   39,   21,   39,   39,   39,   39,   31,    6,
-       37,   38,   41,   41,   40,   41,   41,   39,   39,   39,
-       39,   24,   39,   39,   39,   29,   39,   41,   41,   39,
+        7,    6,    0,   38,   42,   42,   35,   32,   34,   41,
+       41,   41,   41,   41,   41,    4,   14,   12,    2,   13,
+       15,   10,   11,    3,    9,   39,   39,   39,   39,   39,
+       39,   39,   21,   39,   39,   39,   39,   31,   37,   38,
+       41,   41,   40,   41,   41,   39,   39,   39,   39,   24,
+       39,   39,   39,   29,   39,   41,   41,   39,   39,   22,
 
-       39,   22,   39,   27,   39,   36,   39,   41,   25,   39,
-       39,   23,   39,   28,   39,   26,    0
+       39,   27,   39,   36,   39,   41,   25,   39,   39,   23,
+       39,   28,   39,   26,    0
     } ;
 
 static const YY_CHAR yy_ec[256] =
@@ -494,52 +494,50 @@ static const YY_CHAR yy_ec[256] =
 
 static const YY_CHAR yy_meta[62] =
     {   0,
-        1,    1,    2,    1,    1,    1,    1,    1,    1,    1,
-        1,    1,    1,    1,    1,    1,    1,    3,    3,    1,
-        1,    1,    1,    1,    1,    3,    3,    3,    4,    4,
-        4,    4,    1,    1,    4,    1,    3,    3,    3,    3,
-        3,    3,    4,    4,    4,    4,    4,    4,    4,    4,
-        4,    4,    4,    4,    4,    4,    4,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    2,    1,    3,    3,    1,
+        1,    1,    1,    1,    1,    3,    3,    3,    3,    3,
+        3,    3,    1,    1,    3,    1,    3,    3,    3,    3,
+        3,    3,    3,    3,    3,    3,    3,    3,    3,    3,
+        3,    3,    3,    3,    3,    3,    3,    1,    1,    1,
         1
     } ;
 
-static const flex_int16_t yy_base[123] =
+static const flex_int16_t yy_base[119] =
     {   0,
-        0,    0,  152,  168,  168,  168,  168,  127,  168,  168,
+        0,    0,  152,  185,  185,  185,  185,  127,  185,  185,
       141,  131,   50,   47,   52,  124,  123,  122,    0,   93,
-       94,   92,   86,   88,  102,  101,    0,   85,   84,   85,
-       27,   90,   90,   79,   92,   84,   67,  168,  168,  168,
-      168,    0,   54,   60,    0,  168,  168,  168,    0,   75,
-       74,   70,   71,   76,  168,  168,  168,  168,  168,  168,
-      168,  168,  168,  168,   83,  168,    0,   77,   68,   64,
-       67,   63,   64,    0,   59,   56,   58,   62,  168,    0,
-       56,    0,   58,   66,    0,   57,   61,   63,   46,   57,
-       45,    0,   57,   41,   53,    0,   45,   39,   42,   43,
+       94,   92,   86,   88,  102,  185,    0,   86,   86,   86,
+       27,   91,   91,   80,   93,   85,   69,  185,  185,  185,
+      185,  185,   54,   60,  110,  140,  185,  185,  185,    0,
+       75,   74,   70,   71,   76,  185,  185,  185,  185,  185,
+      185,  185,  185,  185,  185,    0,   78,   69,   65,   68,
+       64,   65,    0,   60,   58,   59,   64,  185,   56,    0,
+       59,   69,    0,   58,   62,   64,   47,   58,   46,    0,
+       58,   42,   54,    0,   46,   40,   43,   44,   45,    0,
 
-       44,    0,   47,    0,   36,    0,   45,   42,    0,   35,
-       34,    0,   28,    0,   39,    0,  168,  153,  157,  159,
-      163,   66
+       48,    0,   37,    0,   46,   43,    0,   36,   35,    0,
+       29,    0,   41,    0,  185,  181,   77,   66
     } ;
 
-static const flex_int16_t yy_def[123] =
+static const flex_int16_t yy_def[119] =
     {   0,
-      117,    1,  117,  117,  117,  117,  117,  117,  117,  117,
-      117,  117,  117,  117,  117,  117,  117,  117,  118,  118,
-      118,  118,  118,  118,  117,  119,  120,  120,  120,  120,
-      120,  120,  120,  120,  120,  120,  117,  117,  117,  117,
-      117,  121,  117,  117,  122,  117,  117,  117,  118,  118,
-      118,  118,  118,  118,  117,  117,  117,  117,  117,  117,
-      117,  117,  117,  117,  119,  117,  120,  120,  120,  120,
-      120,  120,  120,  120,  120,  120,  120,  120,  117,  121,
-      117,  122,  118,  118,  118,  118,  118,  120,  120,  120,
-      120,  120,  120,  120,  120,  120,  120,  118,  118,  120,
+      115,    1,  115,  115,  115,  115,  115,  115,  115,  115,
+      115,  115,  115,  116,  116,  115,  115,  115,  117,  117,
+      117,  117,  117,  117,  115,  115,  118,  118,  118,  118,
+      118,  118,  118,  118,  118,  118,  115,  115,  115,  115,
+      115,  115,  115,  116,  116,  116,  115,  115,  115,  117,
+      117,  117,  117,  117,  117,  115,  115,  115,  115,  115,
+      115,  115,  115,  115,  115,  118,  118,  118,  118,  118,
+      118,  118,  118,  118,  118,  118,  118,  115,  115,   46,
+      117,  117,  117,  117,  117,  118,  118,  118,  118,  118,
+      118,  118,  118,  118,  118,  117,  117,  118,  118,  118,
 
-      120,  120,  120,  120,  120,  120,  120,  118,  120,  120,
-      120,  120,  120,  120,  120,  120,    0,  117,  117,  117,
-      117,  117
+      118,  118,  118,  118,  118,  117,  118,  118,  118,  118,
+      118,  118,  118,  118,    0,  115,  115,  115
     } ;
 
-static const flex_int16_t yy_nxt[230] =
+static const flex_int16_t yy_nxt[247] =
     {   0,
         4,    5,    6,    7,    8,    9,   10,   11,    4,   10,
        10,   12,   10,   10,   10,    4,   13,   14,   15,   10,
@@ -547,28 +545,30 @@ static const flex_int16_t yy_nxt[230] =
        23,   24,   25,   10,    4,   26,   27,   28,   29,   27,
        30,   31,   27,   27,   32,   27,   27,   27,   27,   27,
        33,   27,   34,   27,   35,   36,   27,   10,   37,   10,
-       10,   41,   43,   71,   44,   44,   42,   43,   82,   44,
-       44,   81,   81,   81,   81,   43,   72,   44,   44,  116,
-       73,  115,  114,  113,   85,  112,  111,  106,  110,  109,
-      108,   85,  107,  106,  105,  104,  103,  102,  101,  100,
+       10,   41,   43,   70,   44,   44,   42,   43,   66,   44,
+       44,   79,   79,   79,   79,   43,   71,   44,   44,   50,
+       72,  114,  113,  112,  111,   83,  110,  109,  104,  108,
+      107,  106,   83,  105,  104,  103,  102,  101,  100,   99,
 
-       85,   99,   98,   45,   55,   85,   97,   56,   96,   95,
-       57,   94,   93,   92,   91,   90,   89,   88,   66,   58,
-       87,   86,   85,   84,   83,   79,   59,   78,   77,   76,
-       75,   74,   70,   69,   60,   68,   66,   54,   53,   61,
-       52,   51,   50,   62,   48,   47,   46,   40,   39,   38,
-       63,  117,  117,  117,   64,   49,   49,   65,   65,   65,
-       65,   67,   67,   80,  117,   80,   80,    3,  117,  117,
-      117,  117,  117,  117,  117,  117,  117,  117,  117,  117,
-      117,  117,  117,  117,  117,  117,  117,  117,  117,  117,
-      117,  117,  117,  117,  117,  117,  117,  117,  117,  117,
+       98,   83,   97,   46,   56,   96,   83,   57,   95,   94,
+       58,   93,   92,   91,   90,   89,   88,   87,   86,   59,
+       85,   84,   83,   82,   81,  115,   60,   78,   77,   76,
+       75,   74,   73,   69,   61,   68,   67,   55,   54,   62,
+       53,   52,   51,   63,   49,   48,   47,   40,   39,   38,
+       64,  115,  115,  115,   65,  115,  115,   80,   80,  115,
+      115,  115,  115,  115,  115,   80,   80,   80,  115,  115,
+      115,  115,  115,  115,  115,  115,   80,   80,   80,   80,
+       80,   80,   45,   45,    3,  115,  115,  115,  115,  115,
+      115,  115,  115,  115,  115,  115,  115,  115,  115,  115,
 
-      117,  117,  117,  117,  117,  117,  117,  117,  117,  117,
-      117,  117,  117,  117,  117,  117,  117,  117,  117,  117,
-      117,  117,  117,  117,  117,  117,  117,  117,  117
+      115,  115,  115,  115,  115,  115,  115,  115,  115,  115,
+      115,  115,  115,  115,  115,  115,  115,  115,  115,  115,
+      115,  115,  115,  115,  115,  115,  115,  115,  115,  115,
+      115,  115,  115,  115,  115,  115,  115,  115,  115,  115,
+      115,  115,  115,  115,  115,  115
     } ;
 
-static const flex_int16_t yy_chk[230] =
+static const flex_int16_t yy_chk[247] =
     {   0,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
@@ -576,25 +576,27 @@ static const flex_int16_t yy_chk[230] =
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,   13,   14,   31,   14,   14,   13,   15,  122,   15,
-       15,   43,   43,   81,   81,   44,   31,   44,   44,  115,
-       31,  113,  111,  110,  108,  107,  105,  103,  101,  100,
-       99,   98,   97,   95,   94,   93,   91,   90,   89,   88,
+        1,   13,   14,   31,   14,   14,   13,   15,  118,   15,
+       15,   43,   43,   79,   79,   44,   31,   44,   44,  117,
+       31,  113,  111,  109,  108,  106,  105,  103,  101,   99,
+       98,   97,   96,   95,   93,   92,   91,   89,   88,   87,
 
-       87,   86,   84,   14,   25,   83,   78,   25,   77,   76,
-       25,   75,   73,   72,   71,   70,   69,   68,   65,   25,
-       54,   53,   52,   51,   50,   37,   25,   36,   35,   34,
-       33,   32,   30,   29,   25,   28,   26,   24,   23,   25,
+       86,   85,   84,   14,   25,   82,   81,   25,   77,   76,
+       25,   75,   74,   72,   71,   70,   69,   68,   67,   25,
+       55,   54,   53,   52,   51,   45,   25,   37,   36,   35,
+       34,   33,   32,   30,   25,   29,   28,   24,   23,   25,
        22,   21,   20,   25,   18,   17,   16,   12,   11,    8,
-       25,    3,    0,    0,   25,  118,  118,  119,  119,  119,
-      119,  120,  120,  121,    0,  121,  121,  117,  117,  117,
-      117,  117,  117,  117,  117,  117,  117,  117,  117,  117,
-      117,  117,  117,  117,  117,  117,  117,  117,  117,  117,
-      117,  117,  117,  117,  117,  117,  117,  117,  117,  117,
+       25,    3,    0,    0,   25,   46,    0,   46,   46,    0,
+        0,    0,    0,    0,    0,   46,   46,   46,    0,    0,
+        0,    0,    0,    0,    0,    0,   46,   46,   46,   46,
+       46,   46,  116,  116,  115,  115,  115,  115,  115,  115,
+      115,  115,  115,  115,  115,  115,  115,  115,  115,  115,
 
-      117,  117,  117,  117,  117,  117,  117,  117,  117,  117,
-      117,  117,  117,  117,  117,  117,  117,  117,  117,  117,
-      117,  117,  117,  117,  117,  117,  117,  117,  117
+      115,  115,  115,  115,  115,  115,  115,  115,  115,  115,
+      115,  115,  115,  115,  115,  115,  115,  115,  115,  115,
+      115,  115,  115,  115,  115,  115,  115,  115,  115,  115,
+      115,  115,  115,  115,  115,  115,  115,  115,  115,  115,
+      115,  115,  115,  115,  115,  115
     } ;
 
 static yy_state_type yy_last_accepting_state;
@@ -603,13 +605,13 @@ static char *yy_last_accepting_cpos;
 extern int yy_flex_debug;
 int yy_flex_debug = 1;
 
-static const flex_int16_t yy_rule_linenum[43] =
+static const flex_int16_t yy_rule_linenum[44] =
     {   0,
-       87,  112,  125,  134,  144,  153,  155,  160,  174,  183,
-      192,  201,  210,  219,  228,  237,  273,  277,  281,  289,
-      294,  299,  304,  309,  314,  319,  324,  329,  334,  339,
-      344,  349,  354,  359,  364,  369,  378,  387,  444,  453,
-      462,  473
+       87,  126,  151,  183,  217,  241,  257,  273,  298,  330,
+      362,  394,  426,  458,  490,  522,  570,  585,  600,  620,
+      636,  652,  668,  684,  700,  716,  732,  748,  764,  780,
+      796,  812,  828,  844,  860,  876,  896,  916,  984, 1007,
+     1027, 1049, 1071
     } ;
 
 /* The intent behind this definition is that it'll catch
@@ -669,15 +671,15 @@ extern YYSTYPE seal_yylval;
  *  Add Your own definitions here
  */
 char c;
-bool flag = 0, flag0 = 0, flag1 = 0;
+bool flag = 0, flag0 = 0, flag1 = 0, flag2 = 0, flag3 = 0;
 char* s;
 
-#line 676 "seal-lex.cc"
+#line 678 "seal-lex.cc"
 #line 57 "seal.flex"
  /*
   * Define names for regular expressions here.
   */
-#line 681 "seal-lex.cc"
+#line 683 "seal-lex.cc"
 
 #define INITIAL 0
 
@@ -960,7 +962,7 @@ YY_DECL
 #line 85 "seal.flex"
 
 
-#line 964 "seal-lex.cc"
+#line 966 "seal-lex.cc"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -989,13 +991,13 @@ yy_match:
 			while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 				{
 				yy_current_state = (int) yy_def[yy_current_state];
-				if ( yy_current_state >= 118 )
+				if ( yy_current_state >= 116 )
 					yy_c = yy_meta[yy_c];
 				}
 			yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
 			++yy_cp;
 			}
-		while ( yy_base[yy_current_state] != 168 );
+		while ( yy_base[yy_current_state] != 185 );
 
 yy_find_action:
 /* %% [10.0] code to find the action number goes here */
@@ -1018,13 +1020,13 @@ do_action:	/* This label is used only to access EOF actions. */
 			{
 			if ( yy_act == 0 )
 				fprintf( stderr, "--scanner backing up\n" );
-			else if ( yy_act < 43 )
+			else if ( yy_act < 44 )
 				fprintf( stderr, "--accepting rule at line %ld (\"%s\")\n",
 				         (long)yy_rule_linenum[yy_act], yytext );
-			else if ( yy_act == 43 )
+			else if ( yy_act == 44 )
 				fprintf( stderr, "--accepting default rule (\"%s\")\n",
 				         yytext );
-			else if ( yy_act == 44 )
+			else if ( yy_act == 45 )
 				fprintf( stderr, "--(end of buffer or a NUL)\n" );
 			else
 				fprintf( stderr, "--EOF (start condition %d)\n", YY_START );
@@ -1041,44 +1043,69 @@ do_action:	/* This label is used only to access EOF actions. */
 			goto yy_find_action;
 
 case 1:
-/* rule 1 can match eol */
 YY_RULE_SETUP
 #line 87 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else
+  if (!flag && !flag3)
   {
-    s = new char[512];
-    strncpy(s, yytext + 1, strlen(yytext) - 2);
-    for (int i = 0; i < strlen(s); i ++)
+    if (flag0)
     {
-      if (s[i] == '\n') curr_lineno ++;
+      s = strcat(s, yytext);
+      if (strlen(s) > 256)
+      {
+        flag0 = 0;
+        flag2 = 0;
+        delete []s;
+        strcpy(seal_yylval.error_msg, "String constant too long");
+        return (ERROR);
+      }
     }
-    if (strlen(s) <= 256)
+    else if (!flag2)
     {
-      seal_yylval.symbol = stringtable.add_string(s);
-      delete []s;
-      return (CONST_STRING);
+      flag2 = 1;
+      s = new char[512];
     }
-    else
+    else if (flag2)
     {
-      delete []s;
-      strcpy(seal_yylval.error_msg, "String too long");
-      return ERROR;
+      flag2 = 0;
+      if (strlen(s) <= 256)
+      {
+        seal_yylval.symbol = stringtable.add_string(s);
+        delete []s;
+        return (CONST_STRING);
+      }
+      else
+      {
+        delete []s;
+        strcpy(seal_yylval.error_msg, "String constant too long");
+        return (ERROR);
+      }
     }
   }
 }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 112 "seal.flex"
+#line 126 "seal.flex"
 {
-  if (flag0)
+  if (flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (flag0)
   {
     flag1 = 1;
     strcpy(seal_yylval.error_msg, "String contains null character '\\0'");
   }
-  else if (!flag)
+  else if (!flag && !flag3)
   {
 	  strcpy(seal_yylval.error_msg, yytext); 
 	  return (ERROR);
@@ -1087,10 +1114,33 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 125 "seal.flex"
+#line 151 "seal.flex"
 {
-  if (flag0) s = strcat(s, "\n");
-  else if (!flag)
+  if (flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (flag0)
+  {
+    s = strcat(s, "\n");
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
 	  strcpy(seal_yylval.error_msg, yytext); 
 	  return (ERROR);
@@ -1100,55 +1150,130 @@ YY_RULE_SETUP
 case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
-#line 134 "seal.flex"
+#line 183 "seal.flex"
 {
   curr_lineno ++;
-  if (flag0) s = strcat(s, "\n");
-  else if (!flag)
+  if (flag2)
   {
-	  strcpy(seal_yylval.error_msg, yytext); 
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (flag0)
+  {
+    s = strcat(s, "\n");
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
+  {
+	  strcpy(seal_yylval.error_msg, "\\"); 
 	  return (ERROR);
   }
+  flag3 = 0;
 }
 	YY_BREAK
 case 5:
 /* rule 5 can match eol */
 YY_RULE_SETUP
-#line 144 "seal.flex"
+#line 217 "seal.flex"
 {
   curr_lineno ++;
-  if (flag0)
+  flag3 = 0;
+  if (flag2)
   {
-    flag1 = 1;
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (flag0)
+  {
+    flag0 = 0;
+    flag2 = 0;
     strcpy(seal_yylval.error_msg, "newline in quotation must use a '\\'");
+    return (ERROR);
   }
 }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 153 "seal.flex"
-{}
+#line 241 "seal.flex"
+{
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag) flag3 = 1;
+}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 155 "seal.flex"
+#line 257 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else flag = 1;
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag3) flag = 1;
 }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 160 "seal.flex"
+#line 273 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag3)
   {
     if (flag) 
       flag = 0;
     else
     {
-      strcpy(seal_yylval.error_msg, "*/ not matched"); 
+      strcpy(seal_yylval.error_msg, "Unmatched */"); 
 	    return (ERROR);
     }
   }
@@ -1156,10 +1281,33 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 174 "seal.flex"
+#line 298 "seal.flex"
 {
-  if (flag0) s = strcat(s, "\t");
-  else if (!flag)
+  if (flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (flag0)
+  {
+    s = strcat(s, "\t");
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
 	  strcpy(seal_yylval.error_msg, yytext); 
 	  return (ERROR);
@@ -1168,10 +1316,33 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 183 "seal.flex"
+#line 330 "seal.flex"
 {
-  if (flag0) s = strcat(s, "\b");
-  else if (!flag)
+  if (flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (flag0)
+  {
+    s = strcat(s, "\b");
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
 	  strcpy(seal_yylval.error_msg, yytext); 
 	  return (ERROR);
@@ -1180,10 +1351,33 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 192 "seal.flex"
+#line 362 "seal.flex"
 {
-  if (flag0) s = strcat(s, "\f");
-  else if (!flag)
+  if (flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (flag0)
+  {
+    s = strcat(s, "\f");
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
 	  strcpy(seal_yylval.error_msg, yytext); 
 	  return (ERROR);
@@ -1192,10 +1386,33 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 201 "seal.flex"
+#line 394 "seal.flex"
 {
-  if (flag0) s = strcat(s, "\'");
-  else if (!flag)
+  if (flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (flag0)
+  {
+    s = strcat(s, "\'");
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
 	  strcpy(seal_yylval.error_msg, yytext); 
 	  return (ERROR);
@@ -1204,10 +1421,33 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 210 "seal.flex"
+#line 426 "seal.flex"
 {
-  if (flag0) s = strcat(s, "\?");
-  else if (!flag)
+  if (flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (flag0)
+  {
+    s = strcat(s, "\?");
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
 	  strcpy(seal_yylval.error_msg, yytext); 
 	  return (ERROR);
@@ -1216,10 +1456,33 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 219 "seal.flex"
+#line 458 "seal.flex"
 {
-  if (flag0) s = strcat(s, "\"");
-  else if (!flag)
+  if (flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (flag0)
+  {
+    s = strcat(s, "\"");
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
 	  strcpy(seal_yylval.error_msg, yytext); 
 	  return (ERROR);
@@ -1228,10 +1491,33 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 228 "seal.flex"
+#line 490 "seal.flex"
 {
-  if (flag0) s = strcat(s, "\\");
-  else if (!flag)
+  if (flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (flag0)
+  {
+    s = strcat(s, "\\");
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
 	  strcpy(seal_yylval.error_msg, yytext); 
 	  return (ERROR);
@@ -1240,11 +1526,23 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 237 "seal.flex"
+#line 522 "seal.flex"
 {
-  if (!flag)
+  if (!flag && !flag3)
   {
-    if (!flag0)
+    if (flag2)
+    {
+      s = strcat(s, yytext);
+      if (strlen(s) > 256)
+      {
+        flag0 = 0;
+        flag2 = 0;
+        delete []s;
+        strcpy(seal_yylval.error_msg, "String constant too long");
+        return (ERROR);
+      }
+    }
+    else if (!flag0)
     {
       flag0 = 1;
       s = new char[512];
@@ -1263,7 +1561,7 @@ YY_RULE_SETUP
         else
         {
           delete []s;
-          strcpy(seal_yylval.error_msg, "String too long");
+          strcpy(seal_yylval.error_msg, "String constant too long");
           return (ERROR);
         }
       }
@@ -1279,23 +1577,57 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 273 "seal.flex"
+#line 570 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
 }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 277 "seal.flex"
+#line 585 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
 }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 281 "seal.flex"
+#line 600 "seal.flex"
 {
-  if (!flag0 && !flag)
+  if (flag2)
+  {
+    strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag0 && !flag && !flag3)
   {
 	  strcpy(seal_yylval.error_msg, yytext); 
 	  return (ERROR);
@@ -1304,138 +1636,325 @@ YY_RULE_SETUP
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 289 "seal.flex"
+#line 620 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (int(yytext[0]));
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (int(yytext[0]));
 }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 294 "seal.flex"
+#line 636 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (IF);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (IF);
 }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 299 "seal.flex"
+#line 652 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (ELSE);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (ELSE);
 }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 304 "seal.flex"
+#line 668 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (WHILE);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (WHILE);
 }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 309 "seal.flex"
+#line 684 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (FOR);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (FOR);
 }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 314 "seal.flex"
+#line 700 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (BREAK);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (BREAK);
 }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 319 "seal.flex"
+#line 716 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (CONTINUE);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (CONTINUE);
 }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 324 "seal.flex"
+#line 732 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (FUNC);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (FUNC);
 }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 329 "seal.flex"
+#line 748 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (RETURN);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (RETURN);
 }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 334 "seal.flex"
+#line 764 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (VAR);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (VAR);
 }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 339 "seal.flex"
+#line 780 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (AND);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (AND);
 }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 344 "seal.flex"
+#line 796 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (OR);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (OR);
 }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 349 "seal.flex"
+#line 812 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (EQUAL);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (EQUAL);
 }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 354 "seal.flex"
+#line 828 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (NE);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (NE);
 }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 359 "seal.flex"
+#line 844 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (GE);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (GE);
 }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 364 "seal.flex"
+#line 860 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (LE);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (LE);
 }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 369 "seal.flex"
+#line 876 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag)
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
     seal_yylval.boolean = (strcmp(yytext, "true")) ? 0 : 1;
     return (CONST_BOOL);
@@ -1444,10 +1963,21 @@ YY_RULE_SETUP
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 378 "seal.flex"
+#line 896 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag)
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
     seal_yylval.symbol = floattable.add_string(yytext);
 	  return (CONST_FLOAT);
@@ -1456,10 +1986,21 @@ YY_RULE_SETUP
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 387 "seal.flex"
+#line 916 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag)
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
     char *s0;
     s0 = new char[512];
@@ -1516,10 +2057,24 @@ YY_RULE_SETUP
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 444 "seal.flex"
+#line 984 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag)
+  if (flag0 || flag2)
+  {
+    for (int i = 0; i < strlen(yytext); i ++)
+    {
+      s = strncat(s, yytext + i, 1);
+      if (strlen(s) > 256)
+      {
+        flag0 = 0;
+        flag2 = 0;
+        delete []s;
+        strcpy(seal_yylval.error_msg, "String constant too long");
+        return (ERROR);
+      }
+    }
+  }
+  else if (!flag && !flag3)
   {
     seal_yylval.symbol = idtable.add_string(yytext);
 	  return (OBJECTID);
@@ -1528,10 +2083,21 @@ YY_RULE_SETUP
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 453 "seal.flex"
+#line 1007 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag)
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
     seal_yylval.symbol = idtable.add_string(yytext);
     return (TYPEID);
@@ -1540,10 +2106,21 @@ YY_RULE_SETUP
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 462 "seal.flex"
+#line 1027 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag)
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
     string s0 = "illegal TYPEID ";
     s0 += yytext;
@@ -1554,24 +2131,77 @@ YY_RULE_SETUP
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 473 "seal.flex"
+#line 1049 "seal.flex"
 {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag)
+  if (flag0 || flag2)
   {
-	  strcpy(seal_yylval.error_msg, yytext); 
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
+  {
+    string s0 = "illegal Identifier name ";
+    s0 += yytext;
+    strcpy(seal_yylval.error_msg, s0.c_str());
 	  return (ERROR);
   }
 }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 482 "seal.flex"
+#line 1071 "seal.flex"
+{
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
+  {
+	  strcpy(seal_yylval.error_msg, yytext); 
+	  return (ERROR);
+  }
+}
+	YY_BREAK
+case YY_STATE_EOF(INITIAL):
+#line 1092 "seal.flex"
+{
+  if (flag)
+  {
+    flag = 0;
+    strcpy(seal_yylval.error_msg, "EOF in comment");
+    return (ERROR);
+  }
+  else if (flag0 || flag2)
+  {
+    flag0 = 0;
+    flag2 = 0;
+    strcpy(seal_yylval.error_msg, "EOF in string constant");
+    return (ERROR);
+  }
+  else return 0;
+}
+	YY_BREAK
+case 44:
+YY_RULE_SETUP
+#line 1109 "seal.flex"
 ECHO;
 	YY_BREAK
-#line 1573 "seal-lex.cc"
-case YY_STATE_EOF(INITIAL):
-	yyterminate();
+#line 2205 "seal-lex.cc"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -1889,7 +2519,7 @@ static int yy_get_next_buffer (void)
 		while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 			{
 			yy_current_state = (int) yy_def[yy_current_state];
-			if ( yy_current_state >= 118 )
+			if ( yy_current_state >= 116 )
 				yy_c = yy_meta[yy_c];
 			}
 		yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
@@ -1922,11 +2552,11 @@ static int yy_get_next_buffer (void)
 	while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 		{
 		yy_current_state = (int) yy_def[yy_current_state];
-		if ( yy_current_state >= 118 )
+		if ( yy_current_state >= 116 )
 			yy_c = yy_meta[yy_c];
 		}
 	yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
-	yy_is_jam = (yy_current_state == 117);
+	yy_is_jam = (yy_current_state == 115);
 
 		return yy_is_jam ? 0 : yy_current_state;
 }
@@ -2718,5 +3348,5 @@ void yyfree (void * ptr )
 
 /* %ok-for-header */
 
-#line 482 "seal.flex"
+#line 1109 "seal.flex"
 

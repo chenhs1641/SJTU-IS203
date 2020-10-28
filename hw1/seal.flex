@@ -47,7 +47,7 @@ extern YYSTYPE seal_yylval;
  *  Add Your own definitions here
  */
 char c;
-bool flag = 0, flag0 = 0, flag1 = 0;
+bool flag = 0, flag0 = 0, flag1 = 0, flag2 = 0, flag3 = 0;
 char* s;
 
 %}
@@ -72,49 +72,75 @@ equal "=="
 ne "!="
 ge ">="
 le "<="
-annotation_one "//"[^\n]*
 type "Int"|"Float"|"String"|"Bool"|"Void"
 INT_CONST 0x([0-9a-fA-F]+)|([0-9]+)
 FLOAT_CONST ([0-9]+)"."([0-9]+)
 BOOL_CONST true|false
 OBJECT_CONST [a-z]([A-Za-z0-9_]*)
 false_OBJECT_CONST [A-Z]([A-Za-z0-9_]*)
+false_ID [0-9]([A-Za-z0-9_]*)
 symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"{"|"}"|","|":"
 
 %%
 
-"`"[^`]*"`" {
-  if (flag0) s = strcat(s, yytext);
-  else
+"`" {
+  if (!flag && !flag3)
   {
-    s = new char[512];
-    strncpy(s, yytext + 1, strlen(yytext) - 2);
-    for (int i = 0; i < strlen(s); i ++)
+    if (flag0)
     {
-      if (s[i] == '\n') curr_lineno ++;
+      s = strcat(s, yytext);
+      if (strlen(s) > 256)
+      {
+        flag0 = 0;
+        flag2 = 0;
+        delete []s;
+        strcpy(seal_yylval.error_msg, "String constant too long");
+        return (ERROR);
+      }
     }
-    if (strlen(s) <= 256)
+    else if (!flag2)
     {
-      seal_yylval.symbol = stringtable.add_string(s);
-      delete []s;
-      return (CONST_STRING);
+      flag2 = 1;
+      s = new char[512];
     }
-    else
+    else if (flag2)
     {
-      delete []s;
-      strcpy(seal_yylval.error_msg, "String too long");
-      return ERROR;
+      flag2 = 0;
+      if (strlen(s) <= 256)
+      {
+        seal_yylval.symbol = stringtable.add_string(s);
+        delete []s;
+        return (CONST_STRING);
+      }
+      else
+      {
+        delete []s;
+        strcpy(seal_yylval.error_msg, "String constant too long");
+        return (ERROR);
+      }
     }
   }
 }
 
 "\\0" {
-  if (flag0)
+  if (flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (flag0)
   {
     flag1 = 1;
     strcpy(seal_yylval.error_msg, "String contains null character '\\0'");
   }
-  else if (!flag)
+  else if (!flag && !flag3)
   {
 	  strcpy(seal_yylval.error_msg, yytext); 
 	  return (ERROR);
@@ -122,8 +148,31 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"{"|"}"|"
 }
 
 "\\n" {
-  if (flag0) s = strcat(s, "\n");
-  else if (!flag)
+  if (flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (flag0)
+  {
+    s = strcat(s, "\n");
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
 	  strcpy(seal_yylval.error_msg, yytext); 
 	  return (ERROR);
@@ -132,47 +181,145 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"{"|"}"|"
 
 "\\\n" {
   curr_lineno ++;
-  if (flag0) s = strcat(s, "\n");
-  else if (!flag)
+  if (flag2)
   {
-	  strcpy(seal_yylval.error_msg, yytext); 
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (flag0)
+  {
+    s = strcat(s, "\n");
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
+  {
+	  strcpy(seal_yylval.error_msg, "\\"); 
 	  return (ERROR);
   }
+  flag3 = 0;
 }
 
 "\n" {
   curr_lineno ++;
-  if (flag0)
+  flag3 = 0;
+  if (flag2)
   {
-    flag1 = 1;
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (flag0)
+  {
+    flag0 = 0;
+    flag2 = 0;
     strcpy(seal_yylval.error_msg, "newline in quotation must use a '\\'");
+    return (ERROR);
   }
 }
 
-{annotation_one} {}
+"//" {
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag) flag3 = 1;
+}
 
 "/*" {
-  if (flag0) s = strcat(s, yytext);
-  else flag = 1;
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag3) flag = 1;
 }
 
 "*/" {
-  if (flag0) s = strcat(s, yytext);
-  else
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag3)
   {
     if (flag) 
       flag = 0;
     else
     {
-      strcpy(seal_yylval.error_msg, "*/ not matched"); 
+      strcpy(seal_yylval.error_msg, "Unmatched */"); 
 	    return (ERROR);
     }
   }
 }
 
 "\\t" {
-  if (flag0) s = strcat(s, "\t");
-  else if (!flag)
+  if (flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (flag0)
+  {
+    s = strcat(s, "\t");
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
 	  strcpy(seal_yylval.error_msg, yytext); 
 	  return (ERROR);
@@ -180,8 +327,31 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"{"|"}"|"
 }
 
 "\\b" {
-  if (flag0) s = strcat(s, "\b");
-  else if (!flag)
+  if (flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (flag0)
+  {
+    s = strcat(s, "\b");
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
 	  strcpy(seal_yylval.error_msg, yytext); 
 	  return (ERROR);
@@ -189,8 +359,31 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"{"|"}"|"
 }
 
 "\\f" {
-  if (flag0) s = strcat(s, "\f");
-  else if (!flag)
+  if (flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (flag0)
+  {
+    s = strcat(s, "\f");
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
 	  strcpy(seal_yylval.error_msg, yytext); 
 	  return (ERROR);
@@ -198,8 +391,31 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"{"|"}"|"
 }
 
 "\\'" {
-  if (flag0) s = strcat(s, "\'");
-  else if (!flag)
+  if (flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (flag0)
+  {
+    s = strcat(s, "\'");
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
 	  strcpy(seal_yylval.error_msg, yytext); 
 	  return (ERROR);
@@ -207,8 +423,31 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"{"|"}"|"
 }
 
 "\\?" {
-  if (flag0) s = strcat(s, "\?");
-  else if (!flag)
+  if (flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (flag0)
+  {
+    s = strcat(s, "\?");
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
 	  strcpy(seal_yylval.error_msg, yytext); 
 	  return (ERROR);
@@ -216,8 +455,31 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"{"|"}"|"
 }
 
 "\\\"" {
-  if (flag0) s = strcat(s, "\"");
-  else if (!flag)
+  if (flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (flag0)
+  {
+    s = strcat(s, "\"");
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
 	  strcpy(seal_yylval.error_msg, yytext); 
 	  return (ERROR);
@@ -225,8 +487,31 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"{"|"}"|"
 }
 
 "\\\\" {
-  if (flag0) s = strcat(s, "\\");
-  else if (!flag)
+  if (flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (flag0)
+  {
+    s = strcat(s, "\\");
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
 	  strcpy(seal_yylval.error_msg, yytext); 
 	  return (ERROR);
@@ -234,9 +519,21 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"{"|"}"|"
 }
 
 "\"" {
-  if (!flag)
+  if (!flag && !flag3)
   {
-    if (!flag0)
+    if (flag2)
+    {
+      s = strcat(s, yytext);
+      if (strlen(s) > 256)
+      {
+        flag0 = 0;
+        flag2 = 0;
+        delete []s;
+        strcpy(seal_yylval.error_msg, "String constant too long");
+        return (ERROR);
+      }
+    }
+    else if (!flag0)
     {
       flag0 = 1;
       s = new char[512];
@@ -255,7 +552,7 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"{"|"}"|"
         else
         {
           delete []s;
-          strcpy(seal_yylval.error_msg, "String too long");
+          strcpy(seal_yylval.error_msg, "String constant too long");
           return (ERROR);
         }
       }
@@ -270,15 +567,49 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"{"|"}"|"
 }
 
 " " {
-  if (flag0) s = strcat(s, yytext);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
 }
 
 "\t" {
-  if (flag0) s = strcat(s, yytext);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
 }
 
 "\\" {
-  if (!flag0 && !flag)
+  if (flag2)
+  {
+    strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag0 && !flag && !flag3)
   {
 	  strcpy(seal_yylval.error_msg, yytext); 
 	  return (ERROR);
@@ -286,88 +617,275 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"{"|"}"|"
 }
 
 {symbol}  {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (int(yytext[0]));
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (int(yytext[0]));
 }
 
 {if} {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (IF);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (IF);
 }
 
 {else} {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (ELSE);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (ELSE);
 }
 
 {while} {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (WHILE);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (WHILE);
 }
 
 {for} {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (FOR);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (FOR);
 }
 
 {break} {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (BREAK);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (BREAK);
 }
 
 {continue} {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (CONTINUE);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (CONTINUE);
 }
 
 {func} {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (FUNC);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (FUNC);
 }
 
 {return} {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (RETURN);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (RETURN);
 }
 
 {var} {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (VAR);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (VAR);
 }
 
 {and} {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (AND);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (AND);
 }
 
 {or} {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (OR);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (OR);
 }
 
 {equal} {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (EQUAL);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (EQUAL);
 }
 
 {ne} {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (NE);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (NE);
 }
 
 {ge} {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (GE);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (GE);
 }
 
 {le} {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag) return (LE);
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3) return (LE);
 }
 
 {BOOL_CONST} {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag)
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
     seal_yylval.boolean = (strcmp(yytext, "true")) ? 0 : 1;
     return (CONST_BOOL);
@@ -375,8 +893,19 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"{"|"}"|"
 }
 
 {FLOAT_CONST} {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag)
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
     seal_yylval.symbol = floattable.add_string(yytext);
 	  return (CONST_FLOAT);
@@ -384,8 +913,19 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"{"|"}"|"
 }
 
 {INT_CONST} {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag)
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
     char *s0;
     s0 = new char[512];
@@ -441,8 +981,22 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"{"|"}"|"
 }
 
 {OBJECT_CONST} {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag)
+  if (flag0 || flag2)
+  {
+    for (int i = 0; i < strlen(yytext); i ++)
+    {
+      s = strncat(s, yytext + i, 1);
+      if (strlen(s) > 256)
+      {
+        flag0 = 0;
+        flag2 = 0;
+        delete []s;
+        strcpy(seal_yylval.error_msg, "String constant too long");
+        return (ERROR);
+      }
+    }
+  }
+  else if (!flag && !flag3)
   {
     seal_yylval.symbol = idtable.add_string(yytext);
 	  return (OBJECTID);
@@ -450,8 +1004,19 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"{"|"}"|"
 }
 
 {type} {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag)
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
     seal_yylval.symbol = idtable.add_string(yytext);
     return (TYPEID);
@@ -459,8 +1024,19 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"{"|"}"|"
 }
 
 {false_OBJECT_CONST} {
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag)
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
     string s0 = "illegal TYPEID ";
     s0 += yytext;
@@ -469,13 +1045,64 @@ symbol "+"|"-"|"*"|"/"|"%"|"&"|"|"|"^"|"~"|"="|"<"|">"|"!"|";"|"("|")"|"{"|"}"|"
   }
 }
 
+{false_ID} {
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
+  {
+    string s0 = "illegal Identifier name ";
+    s0 += yytext;
+    strcpy(seal_yylval.error_msg, s0.c_str());
+	  return (ERROR);
+  }
+}
+
 .	{
-  if (flag0) s = strcat(s, yytext);
-  else if (!flag)
+  if (flag0 || flag2)
+  {
+    s = strcat(s, yytext);
+    if (strlen(s) > 256)
+    {
+      flag0 = 0;
+      flag2 = 0;
+      delete []s;
+      strcpy(seal_yylval.error_msg, "String constant too long");
+      return (ERROR);
+    }
+  }
+  else if (!flag && !flag3)
   {
 	  strcpy(seal_yylval.error_msg, yytext); 
 	  return (ERROR);
   }
+}
+
+
+<<EOF>> {
+  if (flag)
+  {
+    flag = 0;
+    strcpy(seal_yylval.error_msg, "EOF in comment");
+    return (ERROR);
+  }
+  else if (flag0 || flag2)
+  {
+    flag0 = 0;
+    flag2 = 0;
+    strcpy(seal_yylval.error_msg, "EOF in string constant");
+    return (ERROR);
+  }
+  else return 0;
 }
 
 %%
