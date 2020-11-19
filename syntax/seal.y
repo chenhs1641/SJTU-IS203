@@ -84,6 +84,7 @@
     //Decls parse_results;        /* for use in semantic analysis */
     int omerrs = 0;               /* number of errors in lexing and parsing */
     bool flag_nx = 0;
+    int flag_nx0 = 0;
     %}
     
     /* A union of all the types that can be the result of parsing actions. */
@@ -251,7 +252,12 @@
     }
     ;
 
-    stmt : expr ';' {
+    stmt : ';' {flag_nx0 = @1;} {
+      flag_nx = 1;
+      $$ = no_expr();
+      flag_nx = 0;
+    }
+    | expr ';' {
       $$ = $1;
     }
     | ifStmt {
@@ -290,13 +296,13 @@
     }
     ;
 
-    forStmt : FOR expr00 ';' expr00 ';' expr00 stmtBlock {
-      $$ = forstmt($2, $4, $6, $7);
+    forStmt : FOR {flag_nx0 = @1;} expr00 ';' expr00 ';' expr00 stmtBlock {
+      $$ = forstmt($3, $5, $7, $8);
     }
     ;
 
-    returnStmt : RETURN expr00 ';' {
-      $$ = returnstmt($2);
+    returnStmt : RETURN {flag_nx0 = @1;} expr00 ';' {
+      $$ = returnstmt($3);
     }
     ;
 

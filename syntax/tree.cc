@@ -6,6 +6,7 @@
 
 extern int curr_lineno;
 extern bool flag_nx;
+extern int flag_nx0;
 ///////////////////////////////////////////////////////////////////////////
 //
 // file: tree.cc
@@ -28,7 +29,7 @@ int node_lineno = 1;
 ///////////////////////////////////////////////////////////////////////////
 tree_node::tree_node()
 {
-    if (flag_nx) node_lineno = curr_lineno;
+    if (flag_nx) node_lineno = flag_nx0;
     line_number = node_lineno;
 }
 

@@ -98,7 +98,7 @@ extern int seal_yydebug;
 
 union YYSTYPE
 {
-#line 90 "seal.y" /* yacc.c:1909  */
+#line 91 "seal.y" /* yacc.c:1909  */
 
       Boolean boolean;
       Symbol symbol;
