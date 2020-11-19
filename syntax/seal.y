@@ -217,9 +217,6 @@
     variableDecls : variableDecls variableDecl {
       $$ = append_VariableDecls($1, single_VariableDecls($2));
     }
-    | variableDecl {
-      $$ = single_VariableDecls($1);
-    }
     | {
       $$ = nil_VariableDecls();
     }
@@ -248,9 +245,6 @@
 
     stmts : stmts stmt {
       $$ = append_Stmts($1, single_Stmts($2));
-    }
-    | stmt {
-      $$ = single_Stmts($1);
     }
     | {
       $$ = nil_Stmts();
