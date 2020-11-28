@@ -151,6 +151,7 @@
     %type <variableDecls> variableDecls
     %type <variableDecl> variableDecl
     %type <variables> variables
+    %type <variables> some_variables
     %type <variable> variable
     %type <stmtBlock> stmtBlock
     %type <stmts> stmts
@@ -165,6 +166,7 @@
     %type <stmt> returnStmt
     %type <call> call
     %type <actuals> actuals
+    %type <actuals> some_actuals
     %type <expr> constant
 
 	// Add more here
@@ -228,14 +230,19 @@
     }
     ;
 
-    variables : variables ',' variable {
+    variables : some_variables {
+      $$ = $1;
+    }
+    | {
+      $$ = nil_Variables();
+    }
+    ;
+
+    some_variables : some_variables ',' variable {
       $$ = append_Variables($1, single_Variables($3));
     }
     | variable {
       $$ = single_Variables($1);
-    }
-    | {
-      $$ = nil_Variables();
     }
     ;
 
@@ -405,14 +412,19 @@
     }
     ;
 
-    actuals : actuals ',' expr {
+    actuals : some_actuals {
+      $$ = $1;
+    }
+    | {
+      $$ = nil_Actuals();
+    }
+    ;
+
+    some_actuals : some_actuals ',' expr {
       $$ = append_Actuals($1, single_Actuals(actual($3)));
     }
     | expr {
       $$ = single_Actuals(actual($1));
-    }
-    | {
-      $$ = nil_Actuals();
     }
     ;
 

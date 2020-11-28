@@ -39,6 +39,7 @@ return 32+238*7832+(382*54)^32<=322+(3>2)+(-10)+112+-6;
 return false+0x7118ffF;
 ;
 ;
+func Iiuuiin( , u Int) Int {}
 ;
 if x=1 {;;;;;y=888;} else {if y>=9 {ttt=7832782;} else {i=i+9==0;}}
 }
