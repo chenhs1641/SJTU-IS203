@@ -17,15 +17,13 @@ static Decl curr_decl = 0;
 typedef SymbolTable<Symbol, Symbol> ObjectEnvironment; // name, type
 ObjectEnvironment objectEnv;
 
-typedef SymbolTable<Symbol, Variables> ObjectEnvironment0; // name, variables of function
-ObjectEnvironment0 objectEnv0;
-
-typedef SymbolTable<Symbol, Symbol> ObjectEnvironment1; // name, returntype of function
-ObjectEnvironment1 objectEnv1;
+typedef SymbolTable<Symbol, Decl> ObjectEnvironment2; // name, function
+ObjectEnvironment2 objectEnv2;
 
 int flag = 0; // break/continue in loop?
 bool flag0 = 0; // func have return?
-bool flag1 = 0; // have main func?
+// bool flag1 = 0; // have main func?
+
 ///////////////////////////////////////////////
 // helper func
 ///////////////////////////////////////////////
@@ -110,12 +108,8 @@ static void install_calls(Decls decls) {
         if (curr_decl->isCallDecl())
         {
             if (!isValidCallName(curr_decl->getName())) semant_error(curr_decl)<<"cannot def printf!!!\n";
-            if (objectEnv0.probe(curr_decl->getName()) != NULL) semant_error(curr_decl)<<"cannot redef func!!!\n";
-            else
-            {
-                objectEnv0.addid(curr_decl->getName(), new Variables(curr_decl->getVariables()));
-                objectEnv1.addid(curr_decl->getName(), new Symbol(curr_decl->getType()));
-            }
+            if (objectEnv2.probe(curr_decl->getName()) != NULL) semant_error(curr_decl)<<"cannot redef func!!!\n";
+            else objectEnv2.addid(curr_decl->getName(), new Decl(curr_decl));
         }
     }
 }
@@ -145,8 +139,16 @@ static void check_calls(Decls decls) {
 }
 
 static void check_main() {
-    //cout<<idtable.lookup_string("main")<<endl;
-    //if (!idtable.lookup_string("main")) semant_error()<<"no main function";
+    if (objectEnv2.probe(Main) == NULL)
+    {
+        semant_error()<<"no main!!!\n";
+        return;
+    }
+    Decl curr_decl = *(objectEnv2.probe(Main));
+    Variables curr_paras = curr_decl->getVariables();
+    Symbol return_type = curr_decl->getType();
+    if (curr_paras->more(curr_paras->first())) semant_error(curr_decl)<<"main cannot have paras!!!\n";
+    if (isValidTypeName(return_type)) semant_error(curr_decl)<<"main can only void type!!!\n";
 }
 
 void VariableDecl_class::check() {
@@ -158,12 +160,12 @@ void VariableDecl_class::check() {
 void CallDecl_class::check() {
     objectEnv.enterscope();
     flag0 = 1;
-    if (!strcmp(name->get_string(), "main"))
+    /*if (!strcmp(name->get_string(), "main"))
     {
         flag1 = 1;
         if (paras->more(paras->first())) semant_error(this)<<"main cannot have paras!!!\n";
         if (isValidTypeName(this->getType())) semant_error(this)<<"main can only void type!!!\n";
-    }
+    }*/
     for (int i = paras->first(); paras->more(i); i = paras->next(i))
     {
         Variable curr_var = paras->nth(i);
@@ -245,14 +247,15 @@ Symbol Call_class::checkType(){
         setType(Void);
         return type;
     }
-    if (objectEnv0.probe(name) == NULL)
+    if (objectEnv2.probe(name) == NULL)
     {
         semant_error(this)<<"undef call!!!\n";
         setType(Void);
         return type;
     }
-    Variables curr_paras = *(objectEnv0.probe(name));
-    Symbol return_type = *(objectEnv1.probe(name));
+    Decl curr_decl = *(objectEnv2.probe(name));
+    Variables curr_paras = curr_decl->getVariables();
+    Symbol return_type = curr_decl->getType();
     int i = actuals->first();
     int j = curr_paras->first();
     while (actuals->more(i) && curr_paras->more(j))
@@ -284,7 +287,11 @@ Symbol Assign_class::checkType(){
     {
         setType(*(objectEnv.lookup(lvalue)));
     }
-    else semant_error(this)<<"undef lvalue var!!!\n";
+    else
+    {
+        semant_error(this)<<"undef lvalue var!!!\n";
+        setType(Void);
+    }
     if (!sameType(value->checkType(), type)) semant_error(this)<<"assign type error!!!\n";
     return type;
 }
@@ -312,6 +319,7 @@ Symbol Add_class::checkType(){
         return type;
     }
     semant_error(this)<<"add type error!!!\n";
+    setType(Void);
     return type;
 }
 
@@ -338,6 +346,7 @@ Symbol Minus_class::checkType(){
         return type;
     }
     semant_error(this)<<"min type error!!!\n";
+    setType(Void);
     return type;
 }
 
@@ -364,6 +373,7 @@ Symbol Multi_class::checkType(){
         return type;
     }
     semant_error(this)<<"multi type error!!!\n";
+    setType(Void);
     return type;
 }
 
@@ -390,6 +400,7 @@ Symbol Divide_class::checkType(){
         return type;
     }
     semant_error(this)<<"div type error!!!\n";
+    setType(Void);
     return type;
 }
 
@@ -401,6 +412,7 @@ Symbol Mod_class::checkType(){
         return type;
     }
     semant_error(this)<<"mod type error!!!\n";
+    setType(Int);
     return type;
 }
 
@@ -412,6 +424,7 @@ Symbol Neg_class::checkType(){
         return type;
     }
     semant_error(this)<<"neg type error!!!\n";
+    setType(Void);
     return type;
 }
 
@@ -438,6 +451,7 @@ Symbol Lt_class::checkType(){
         return type;
     }
     semant_error(this)<<"lt type error!!!\n";
+    setType(Bool);
     return type;
 }
 
@@ -464,6 +478,7 @@ Symbol Le_class::checkType(){
         return type;
     }
     semant_error(this)<<"le type error!!!\n";
+    setType(Bool);
     return type;
 }
 
@@ -495,6 +510,7 @@ Symbol Equ_class::checkType(){
         return type;
     }
     semant_error(this)<<"equ type error!!!\n";
+    setType(Bool);
     return type;
 }
 
@@ -526,6 +542,7 @@ Symbol Neq_class::checkType(){
         return type;
     }
     semant_error(this)<<"neq type error!!!\n";
+    setType(Bool);
     return type;
 }
 
@@ -552,6 +569,7 @@ Symbol Ge_class::checkType(){
         return type;
     }
     semant_error(this)<<"ge type error!!!\n";
+    setType(Bool);
     return type;
 }
 
@@ -578,6 +596,7 @@ Symbol Gt_class::checkType(){
         return type;
     }
     semant_error(this)<<"gt type error!!!\n";
+    setType(Bool);
     return type;
 }
 
@@ -589,6 +608,7 @@ Symbol And_class::checkType(){
         return type;
     }
     semant_error(this)<<"and type error!!!\n";
+    setType(Bool);
     return type;
 }
 
@@ -600,6 +620,7 @@ Symbol Or_class::checkType(){
         return type;
     }
     semant_error(this)<<"or type error!!!\n";
+    setType(Bool);
     return type;
 }
 
@@ -616,6 +637,7 @@ Symbol Xor_class::checkType(){
         return type;
     }
     semant_error(this)<<"xor type error!!!\n";
+    setType(Void);
     return type;
 }
 
@@ -627,6 +649,7 @@ Symbol Not_class::checkType(){
         return type;
     }
     semant_error(this)<<"not type error!!!\n";
+    setType(Bool);
     return type;
 }
 
@@ -638,6 +661,7 @@ Symbol Bitand_class::checkType(){
         return type;
     }
     semant_error(this)<<"bitand type error!!!\n";
+    setType(Int);
     return type;
 }
 
@@ -649,6 +673,7 @@ Symbol Bitor_class::checkType(){
         return type;
     }
     semant_error(this)<<"bitor type error!!!\n";
+    setType(Int);
     return type;
 }
 
@@ -660,6 +685,7 @@ Symbol Bitnot_class::checkType(){
         return type;
     }
     semant_error(this)<<"bitnot type error!!!\n";
+    setType(Int);
     return type;
 }
 
@@ -695,6 +721,7 @@ Symbol Object_class::checkType(){
         return type;
     }
     semant_error(this)<<"undef var!!!\n";
+    setType(Void);
     return type;
 }
 
@@ -705,19 +732,15 @@ Symbol No_expr_class::checkType(){
 
 void Program_class::semant() {
     objectEnv.enterscope();
-    objectEnv0.enterscope();
-    objectEnv1.enterscope();
+    objectEnv2.enterscope();
     initialize_constants();
     install_calls(decls);
     check_main();
     install_globalVars(decls);
     check_calls(decls);
 
-    if (!flag1) semant_error(decls)<<"have no main!!!\n";
-
     objectEnv.exitscope();
-    objectEnv0.exitscope();
-    objectEnv1.exitscope();
+    objectEnv2.exitscope();
     if (semant_errors > 0) {
         cerr << "Compilation halted due to static semantic errors." << endl;
         exit(1);

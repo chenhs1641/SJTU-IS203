@@ -1,15 +1,17 @@
 /* 
 this a correct example of SEAL 
 */
-func mai1n(aaa Int) Int{
-    return 0;
+func mai0n(aaa Int) Int{
+    //return 0;
 }
 
 var i Int;
+var k Float;
 var j Void;
 func mai0n(aaa Int, aaa Int) Void{
     return;
     i = i + i;
     m(a,b,c);
+    i ^ k;
 }
 
