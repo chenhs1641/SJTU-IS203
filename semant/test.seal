@@ -1,17 +1,45 @@
 /* 
 this a correct example of SEAL 
 */
-func mai0n(aaa Int) Int{
-    //return 0;
+func print1f() Void{
+    return;
+}
+var c Int;
+func printtf(ee Int,ef Int,eg Int) Void{
+    var c Int;
+    //var d Void;
+    var printf Bool;
+ee;
+//for "true";333;"902190*9191+2" { break;}
+return ;
+//break;
+//continue;
+}
+func main() Void{
+var a Int;
+    main();
+    return ;
 }
 
-var i Int;
-var k Float;
-var j Void;
-func mai0n(aaa Int, aaa Int) Void{
+/*var i Int;
+var i Bool;
+var k Float;*/
+//var i Void;
+func iii() Int{
+//i;
+return 0;
+}
+/*func mai01n(aaa Int, a2aa Int) Void{
     return;
     i = i + i;
     m(a,b,c);
     i ^ k;
-}
-
+    //1 < "true";
+    //1 <= true; 1> "f"; 2 == `1`; 2!="!!!"; 2>=false;*/
+/*1 && 2;
+!1;
+true | false;
+true & false;
+~3.5556;*/
+//i = c;
+//}

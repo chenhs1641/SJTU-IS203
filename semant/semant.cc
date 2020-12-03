@@ -11,9 +11,6 @@ static ostream& error_stream = cerr;
 static int semant_errors = 0;
 static Decl curr_decl = 0;
 
-//typedef std::map<Symbol, Symbol> ClassTable; // name, Class_ !!!copied
-//ClassTable classTable;
-
 typedef SymbolTable<Symbol, Symbol> ObjectEnvironment; // name, type
 ObjectEnvironment objectEnv;
 
@@ -22,7 +19,6 @@ ObjectEnvironment2 objectEnv2;
 
 int flag = 0; // break/continue in loop?
 bool flag0 = 0; // func have return?
-// bool flag1 = 0; // have main func?
 
 ///////////////////////////////////////////////
 // helper func
@@ -107,8 +103,13 @@ static void install_calls(Decls decls) {
         Decl curr_decl = decls->nth(i);
         if (curr_decl->isCallDecl())
         {
-            if (!isValidCallName(curr_decl->getName())) semant_error(curr_decl)<<"cannot def printf!!!\n";
-            if (objectEnv2.probe(curr_decl->getName()) != NULL) semant_error(curr_decl)<<"cannot redef func!!!\n";
+            if (!isValidCallName(curr_decl->getName()))
+            {
+                semant_error(curr_decl)<<"Function printf cannot be redefination.\n";
+                semant_error(curr_decl)<<"Function printf cannot have a name as printf.\n";
+            }
+            else if (objectEnv2.probe(curr_decl->getName()) != NULL)
+                semant_error(curr_decl)<<"Function "<<curr_decl->getName()<<" was previously defined.\n";
             else objectEnv2.addid(curr_decl->getName(), new Decl(curr_decl));
         }
     }
@@ -120,8 +121,11 @@ static void install_globalVars(Decls decls) {
         Decl curr_decl = decls->nth(i);
         if (!curr_decl->isCallDecl())
         {
-            if (!isValidTypeName(curr_decl->getType())) semant_error(curr_decl)<<"cannot void var!!!\n";
-            if (objectEnv.probe(curr_decl->getName()) != NULL) semant_error(curr_decl)<<"cannot redef var!!!\n";
+            if (objectEnv.probe(curr_decl->getName()) != NULL)
+                semant_error(curr_decl)<<"var "<<curr_decl->getName()<<" was previously defined.\n";
+            else if (!isValidTypeName(curr_decl->getType()))
+                semant_error(curr_decl)<<"var "<<curr_decl->getName()
+                <<" cannot be of type Void. Void can just be used as return type.\n";
             else objectEnv.addid(curr_decl->getName(), new Symbol(curr_decl->getType()));
         }
     }
@@ -141,43 +145,44 @@ static void check_calls(Decls decls) {
 static void check_main() {
     if (objectEnv2.probe(Main) == NULL)
     {
-        semant_error()<<"no main!!!\n";
+        semant_error()<<"Main function is not defined.\n";
         return;
     }
     Decl curr_decl = *(objectEnv2.probe(Main));
     Variables curr_paras = curr_decl->getVariables();
     Symbol return_type = curr_decl->getType();
-    if (curr_paras->more(curr_paras->first())) semant_error(curr_decl)<<"main cannot have paras!!!\n";
-    if (isValidTypeName(return_type)) semant_error(curr_decl)<<"main can only void type!!!\n";
+    if (curr_paras->more(curr_paras->first())) semant_error(curr_decl)<<"Main function should not have any parameters.\n";
+    if (isValidTypeName(return_type)) semant_error(curr_decl)<<"Main function should have return type Void.\n";
 }
 
 void VariableDecl_class::check() {
-    if (!isValidTypeName(variable->getType())) semant_error(variable)<<"cannot void this var!!!\n";
-    if (objectEnv.probe(variable->getName()) != NULL) semant_error(variable)<<"cannot redef this var!!!\n";
+    if (objectEnv.probe(variable->getName()) != NULL)
+        semant_error(variable)<<"var "<<variable->getName()<<" was previously defined.\n";
+    else if (!isValidTypeName(variable->getType()))
+        semant_error(variable)<<"var "<<variable->getName()
+        <<" cannot be of type Void. Void can just be used as return type.\n";
     else objectEnv.addid(variable->getName(), new Symbol(variable->getType()));
 }
 
 void CallDecl_class::check() {
     objectEnv.enterscope();
     flag0 = 1;
-    /*if (!strcmp(name->get_string(), "main"))
-    {
-        flag1 = 1;
-        if (paras->more(paras->first())) semant_error(this)<<"main cannot have paras!!!\n";
-        if (isValidTypeName(this->getType())) semant_error(this)<<"main can only void type!!!\n";
-    }*/
     for (int i = paras->first(); paras->more(i); i = paras->next(i))
     {
         Variable curr_var = paras->nth(i);
-        if (!isValidTypeName(curr_var->getType())) semant_error(curr_var)<<"cannot void xing var!!!\n";
-        if (objectEnv.probe(curr_var->getName()) != NULL) semant_error(curr_var)<<"cannot redef xing var!!!\n";
+        if (!isValidTypeName(curr_var->getType()))
+            semant_error(curr_var)<<"Function "<<this->getName()
+            <<" 's parameter has an invalid type Void.\n";
+        else if (objectEnv.probe(curr_var->getName()) != NULL)
+            semant_error(curr_var)<<"Function "<<this->getName()
+            <<" 's parameter has a duplicate name "<<curr_var->getName()<<".\n";
         else
         {
             objectEnv.addid(curr_var->getName(), new Symbol(curr_var->getType()));
         }
     }
     this->getBody()->check(this->getType());
-    if (flag0) semant_error(this)<<"no return!!!\n";
+    if (flag0) semant_error(this)<<"Function "<<this->getName()<<" must have an overall return statement.\n";
     objectEnv.exitscope();
 }
 
@@ -193,7 +198,9 @@ void StmtBlock_class::check(Symbol type) {
 }
 
 void IfStmt_class::check(Symbol type) {
-    if (strcmp(condition->checkType()->get_string(), "Bool")) semant_error(this)<<"if cannot unBool cond!!!\n";
+    Symbol value_type = condition->checkType();
+    if (strcmp(value_type->get_string(), "Bool"))
+        semant_error(this)<<"Condition must be a Bool, got "<<value_type<<"\n";
     objectEnv.enterscope();
     thenexpr->check(type);
     objectEnv.exitscope();
@@ -204,7 +211,9 @@ void IfStmt_class::check(Symbol type) {
 
 void WhileStmt_class::check(Symbol type) {
     flag ++;
-    if (strcmp(condition->checkType()->get_string(), "Bool")) semant_error(this)<<"while cannot unBool cond!!!\n";
+    Symbol value_type = condition->checkType();
+    if (strcmp(value_type->get_string(), "Bool"))
+        semant_error(this)<<"Condition must be a Bool, got "<<value_type<<"\n";
     objectEnv.enterscope();
     body->check(type);
     objectEnv.exitscope();
@@ -213,12 +222,12 @@ void WhileStmt_class::check(Symbol type) {
 
 void ForStmt_class::check(Symbol type) {
     flag ++;
-    if (!initexpr->is_empty_Expr())
-        if (!strcmp(initexpr->checkType()->get_string(), "String")) semant_error(this)<<"forinit cannot string cond!!!\n";
     if (!condition->is_empty_Expr())
-        if (!strcmp(condition->checkType()->get_string(), "String")) semant_error(this)<<"forcond cannot string cond!!!\n";
-    if (!loopact->is_empty_Expr())
-        if (!strcmp(loopact->checkType()->get_string(), "String")) semant_error(this)<<"forloop cannot string cond!!!\n";
+    {
+        Symbol value_type = condition->checkType();
+        if (strcmp(value_type->get_string(), "Bool"))
+            semant_error(this)<<"Condition must be a Bool, got "<<value_type<<"\n";
+    }
     objectEnv.enterscope();
     body->check(type);
     objectEnv.exitscope();
@@ -227,29 +236,36 @@ void ForStmt_class::check(Symbol type) {
 
 void ReturnStmt_class::check(Symbol type) {
     flag0 = 0;
-    if (!sameType(value->checkType(), type)) semant_error(this)<<"return type error!!!\n";
+    Symbol value_type = value->checkType();
+    if (!sameType(value_type, type)) semant_error(this)<<"Returns "<<value_type<<" , but need "<<type<<"\n";
 }
 
 void ContinueStmt_class::check(Symbol type) {
-    if (flag == 0) semant_error(this)<<"not in loop cont!!!\n";
+    if (flag == 0) semant_error(this)<<"continue must be used in a loop sentence.\n";
 }
 
 void BreakStmt_class::check(Symbol type) {
-    if (flag == 0) semant_error(this)<<"not in loop break!!!\n";
+    if (flag == 0) semant_error(this)<<"break must be used in a loop sentence.\n";
 }
 
 Symbol Call_class::checkType(){
     if (!isValidCallName(name))
     {
-        if (!actuals->more(actuals->first())) semant_error(this)<<"printf must have paras!!!\n";
-        if (!strcmp(actuals->nth(actuals->first())->getType()->get_string(), "String"))
-            semant_error(this)<<"printf first para must string type!!!\n";
+        if (!actuals->more(actuals->first()))
+            semant_error(this)<<"printf() must has at last one parameter of type String.\n";
+        else
+        {
+            for (int i = actuals->first(); actuals->more(i); i = actuals->next(i))
+                actuals->nth(i)->checkType();
+            if (strcmp(actuals->nth(actuals->first())->getType()->get_string(), "String"))
+                semant_error(this)<<"printf()'s first parameter must be of type String.\n";
+        }
         setType(Void);
         return type;
     }
     if (objectEnv2.probe(name) == NULL)
     {
-        semant_error(this)<<"undef call!!!\n";
+        semant_error(this)<<"Function "<<name<<" has not been defined.\n";
         setType(Void);
         return type;
     }
@@ -261,14 +277,20 @@ Symbol Call_class::checkType(){
     while (actuals->more(i) && curr_paras->more(j))
     {
         Symbol curr_expr_type = actuals->nth(i)->checkType();
-        Symbol curr_para_type = curr_paras->nth(i)->getType();
-        if (!sameType(curr_expr_type, curr_para_type)) semant_error(this)<<"para type error!!!\n";
-        //compare curr_expr_type with real function's curr_para_type
+        Symbol curr_para_type = curr_paras->nth(j)->getType();
+        if (!sameType(curr_expr_type, curr_para_type))
+        {
+            semant_error(this)<<"Function "<<name<<", the "<<i + 1<<" parameter should be "
+            <<curr_para_type<<" but provided a "<<curr_expr_type<<".\n";
+            break;
+        }
         i = actuals->next(i);
         j = curr_paras->next(j);
     }
-    if (actuals->more(i) && !curr_paras->more(j)) semant_error(this)<<"too much call paras!!!\n";
-    if (!actuals->more(i) && curr_paras->more(j)) semant_error(this)<<"too less call paras!!!\n";
+    if (actuals->more(i) && !curr_paras->more(j))
+        semant_error(this)<<"Function "<<name<<" called with wrong number of arguments.\n";
+    if (!actuals->more(i) && curr_paras->more(j))
+        semant_error(this)<<"Function "<<name<<" called with wrong number of arguments.\n";
     setType(return_type);
     return type;
 }
@@ -289,10 +311,12 @@ Symbol Assign_class::checkType(){
     }
     else
     {
-        semant_error(this)<<"undef lvalue var!!!\n";
+        semant_error(this)<<"Left value "<<lvalue<<" has not been defined.\n";
         setType(Void);
     }
-    if (!sameType(value->checkType(), type)) semant_error(this)<<"assign type error!!!\n";
+    Symbol value_type = value->checkType();
+    if (!sameType(value_type, type))
+        semant_error(this)<<"Right value must have type "<<type<<" , got "<<value_type<<"\n";
     return type;
 }
 
@@ -318,7 +342,7 @@ Symbol Add_class::checkType(){
         setType(ct1);
         return type;
     }
-    semant_error(this)<<"add type error!!!\n";
+    semant_error(this)<<"cannot add a "<<ct1<<" and a "<<ct2<<".\n";
     setType(Void);
     return type;
 }
@@ -345,7 +369,7 @@ Symbol Minus_class::checkType(){
         setType(ct1);
         return type;
     }
-    semant_error(this)<<"min type error!!!\n";
+    semant_error(this)<<"cannot minus a "<<ct1<<" and a "<<ct2<<".\n";
     setType(Void);
     return type;
 }
@@ -372,7 +396,7 @@ Symbol Multi_class::checkType(){
         setType(ct1);
         return type;
     }
-    semant_error(this)<<"multi type error!!!\n";
+    semant_error(this)<<"cannot multi a "<<ct1<<" and a "<<ct2<<".\n";
     setType(Void);
     return type;
 }
@@ -399,7 +423,7 @@ Symbol Divide_class::checkType(){
         setType(ct1);
         return type;
     }
-    semant_error(this)<<"div type error!!!\n";
+    semant_error(this)<<"cannot div a "<<ct1<<" and a "<<ct2<<".\n";
     setType(Void);
     return type;
 }
@@ -411,7 +435,7 @@ Symbol Mod_class::checkType(){
         setType(ct1);
         return type;
     }
-    semant_error(this)<<"mod type error!!!\n";
+    semant_error(this)<<"cannot mod a "<<ct1<<" and a "<<ct2<<".\n";
     setType(Int);
     return type;
 }
@@ -423,7 +447,7 @@ Symbol Neg_class::checkType(){
         setType(ct1);
         return type;
     }
-    semant_error(this)<<"neg type error!!!\n";
+    semant_error(this)<<"A "<<ct1<<" doesn't have a negative.\n";
     setType(Void);
     return type;
 }
@@ -450,7 +474,7 @@ Symbol Lt_class::checkType(){
         setType(Bool);
         return type;
     }
-    semant_error(this)<<"lt type error!!!\n";
+    semant_error(this)<<"Cannot compare a "<<ct1<<" and a "<<ct2<<".\n";
     setType(Bool);
     return type;
 }
@@ -477,7 +501,7 @@ Symbol Le_class::checkType(){
         setType(Bool);
         return type;
     }
-    semant_error(this)<<"le type error!!!\n";
+    semant_error(this)<<"Cannot compare a "<<ct1<<" and a "<<ct2<<".\n";
     setType(Bool);
     return type;
 }
@@ -509,7 +533,7 @@ Symbol Equ_class::checkType(){
         setType(Bool);
         return type;
     }
-    semant_error(this)<<"equ type error!!!\n";
+    semant_error(this)<<"Cannot compare a "<<ct1<<" and a "<<ct2<<".\n";
     setType(Bool);
     return type;
 }
@@ -541,7 +565,7 @@ Symbol Neq_class::checkType(){
         setType(Bool);
         return type;
     }
-    semant_error(this)<<"neq type error!!!\n";
+    semant_error(this)<<"Cannot compare a "<<ct1<<" and a "<<ct2<<".\n";
     setType(Bool);
     return type;
 }
@@ -568,7 +592,7 @@ Symbol Ge_class::checkType(){
         setType(Bool);
         return type;
     }
-    semant_error(this)<<"ge type error!!!\n";
+    semant_error(this)<<"Cannot compare a "<<ct1<<" and a "<<ct2<<".\n";
     setType(Bool);
     return type;
 }
@@ -595,7 +619,7 @@ Symbol Gt_class::checkType(){
         setType(Bool);
         return type;
     }
-    semant_error(this)<<"gt type error!!!\n";
+    semant_error(this)<<"Cannot compare a "<<ct1<<" and a "<<ct2<<".\n";
     setType(Bool);
     return type;
 }
@@ -607,7 +631,7 @@ Symbol And_class::checkType(){
         setType(ct1);
         return type;
     }
-    semant_error(this)<<"and type error!!!\n";
+    semant_error(this)<<"Cannot use && between "<<ct1<<" and "<<ct2<<".\n";
     setType(Bool);
     return type;
 }
@@ -619,7 +643,7 @@ Symbol Or_class::checkType(){
         setType(ct1);
         return type;
     }
-    semant_error(this)<<"or type error!!!\n";
+    semant_error(this)<<"Cannot use || between "<<ct1<<" and "<<ct2<<".\n";
     setType(Bool);
     return type;
 }
@@ -636,7 +660,7 @@ Symbol Xor_class::checkType(){
         setType(ct1);
         return type;
     }
-    semant_error(this)<<"xor type error!!!\n";
+    semant_error(this)<<"Cannot use ^ between "<<ct1<<" and "<<ct2<<".\n";
     setType(Void);
     return type;
 }
@@ -648,7 +672,7 @@ Symbol Not_class::checkType(){
         setType(ct1);
         return type;
     }
-    semant_error(this)<<"not type error!!!\n";
+    semant_error(this)<<"Cannot use ! upon "<<ct1<<".\n";
     setType(Bool);
     return type;
 }
@@ -660,7 +684,7 @@ Symbol Bitand_class::checkType(){
         setType(ct1);
         return type;
     }
-    semant_error(this)<<"bitand type error!!!\n";
+    semant_error(this)<<"Cannot use & between "<<ct1<<" and "<<ct2<<".\n";
     setType(Int);
     return type;
 }
@@ -672,7 +696,7 @@ Symbol Bitor_class::checkType(){
         setType(ct1);
         return type;
     }
-    semant_error(this)<<"bitor type error!!!\n";
+    semant_error(this)<<"Cannot use | between "<<ct1<<" and "<<ct2<<".\n";
     setType(Int);
     return type;
 }
@@ -684,7 +708,7 @@ Symbol Bitnot_class::checkType(){
         setType(ct1);
         return type;
     }
-    semant_error(this)<<"bitnot type error!!!\n";
+    semant_error(this)<<"Cannot use unary op ~ upon "<<ct1<<".\n";
     setType(Int);
     return type;
 }
@@ -720,7 +744,7 @@ Symbol Object_class::checkType(){
         setType(*(objectEnv.lookup(var)));
         return type;
     }
-    semant_error(this)<<"undef var!!!\n";
+    semant_error(this)<<"object "<<var<<" has not been defined.\n";
     setType(Void);
     return type;
 }
