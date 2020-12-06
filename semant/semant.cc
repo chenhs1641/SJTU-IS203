@@ -199,7 +199,7 @@ void StmtBlock_class::check(Symbol type) {
 
 void IfStmt_class::check(Symbol type) {
     Symbol value_type = condition->checkType();
-    if (strcmp(value_type->get_string(), "Bool"))
+    if (!sameType(value_type, Bool))
         semant_error(this)<<"Condition must be a Bool, got "<<value_type<<"\n";
     objectEnv.enterscope();
     thenexpr->check(type);
@@ -212,7 +212,7 @@ void IfStmt_class::check(Symbol type) {
 void WhileStmt_class::check(Symbol type) {
     flag ++;
     Symbol value_type = condition->checkType();
-    if (strcmp(value_type->get_string(), "Bool"))
+    if (!sameType(value_type, Bool))
         semant_error(this)<<"Condition must be a Bool, got "<<value_type<<"\n";
     objectEnv.enterscope();
     body->check(type);
@@ -222,12 +222,16 @@ void WhileStmt_class::check(Symbol type) {
 
 void ForStmt_class::check(Symbol type) {
     flag ++;
+    if (!initexpr->is_empty_Expr())
+        initexpr->checkType();
     if (!condition->is_empty_Expr())
     {
         Symbol value_type = condition->checkType();
-        if (strcmp(value_type->get_string(), "Bool"))
+        if (!sameType(value_type, Bool))
             semant_error(this)<<"Condition must be a Bool, got "<<value_type<<"\n";
     }
+    if (!loopact->is_empty_Expr())
+        loopact->checkType();
     objectEnv.enterscope();
     body->check(type);
     objectEnv.exitscope();
@@ -257,7 +261,7 @@ Symbol Call_class::checkType(){
         {
             for (int i = actuals->first(); actuals->more(i); i = actuals->next(i))
                 actuals->nth(i)->checkType();
-            if (strcmp(actuals->nth(actuals->first())->getType()->get_string(), "String"))
+            if (!sameType(actuals->nth(actuals->first())->getType(), String))
                 semant_error(this)<<"printf()'s first parameter must be of type String.\n";
         }
         setType(Void);
@@ -322,24 +326,24 @@ Symbol Assign_class::checkType(){
 
 Symbol Add_class::checkType(){
     Symbol ct1 = e1->checkType(), ct2 = e2->checkType();
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Int) && sameType(ct2, Int))
     {
-        setType(ct1);
+        setType(Int);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Float") && !strcmp(ct2->get_string(), "Float"))
+    if (sameType(ct1, Float) && sameType(ct2, Float))
     {
-        setType(ct1);
+        setType(Float);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Float"))
+    if (sameType(ct1, Int) && sameType(ct2, Float))
     {
-        setType(ct2);
+        setType(Float);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Float") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Float) && sameType(ct2, Int))
     {
-        setType(ct1);
+        setType(Float);
         return type;
     }
     semant_error(this)<<"cannot add a "<<ct1<<" and a "<<ct2<<".\n";
@@ -349,24 +353,24 @@ Symbol Add_class::checkType(){
 
 Symbol Minus_class::checkType(){
     Symbol ct1 = e1->checkType(), ct2 = e2->checkType();
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Int) && sameType(ct2, Int))
     {
-        setType(ct1);
+        setType(Int);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Float") && !strcmp(ct2->get_string(), "Float"))
+    if (sameType(ct1, Float) && sameType(ct2, Float))
     {
-        setType(ct1);
+        setType(Float);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Float"))
+    if (sameType(ct1, Int) && sameType(ct2, Float))
     {
-        setType(ct2);
+        setType(Float);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Float") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Float) && sameType(ct2, Int))
     {
-        setType(ct1);
+        setType(Float);
         return type;
     }
     semant_error(this)<<"cannot minus a "<<ct1<<" and a "<<ct2<<".\n";
@@ -376,24 +380,24 @@ Symbol Minus_class::checkType(){
 
 Symbol Multi_class::checkType(){
     Symbol ct1 = e1->checkType(), ct2 = e2->checkType();
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Int) && sameType(ct2, Int))
     {
-        setType(ct1);
+        setType(Int);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Float") && !strcmp(ct2->get_string(), "Float"))
+    if (sameType(ct1, Float) && sameType(ct2, Float))
     {
-        setType(ct1);
+        setType(Float);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Float"))
+    if (sameType(ct1, Int) && sameType(ct2, Float))
     {
-        setType(ct2);
+        setType(Float);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Float") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Float) && sameType(ct2, Int))
     {
-        setType(ct1);
+        setType(Float);
         return type;
     }
     semant_error(this)<<"cannot multi a "<<ct1<<" and a "<<ct2<<".\n";
@@ -403,24 +407,24 @@ Symbol Multi_class::checkType(){
 
 Symbol Divide_class::checkType(){
     Symbol ct1 = e1->checkType(), ct2 = e2->checkType();
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Int) && sameType(ct2, Int))
     {
-        setType(ct1);
+        setType(Int);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Float") && !strcmp(ct2->get_string(), "Float"))
+    if (sameType(ct1, Float) && sameType(ct2, Float))
     {
-        setType(ct1);
+        setType(Float);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Float"))
+    if (sameType(ct1, Int) && sameType(ct2, Float))
     {
-        setType(ct2);
+        setType(Float);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Float") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Float) && sameType(ct2, Int))
     {
-        setType(ct1);
+        setType(Float);
         return type;
     }
     semant_error(this)<<"cannot div a "<<ct1<<" and a "<<ct2<<".\n";
@@ -430,9 +434,9 @@ Symbol Divide_class::checkType(){
 
 Symbol Mod_class::checkType(){
     Symbol ct1 = e1->checkType(), ct2 = e2->checkType();
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Int) && sameType(ct2, Int))
     {
-        setType(ct1);
+        setType(Int);
         return type;
     }
     semant_error(this)<<"cannot mod a "<<ct1<<" and a "<<ct2<<".\n";
@@ -442,7 +446,7 @@ Symbol Mod_class::checkType(){
 
 Symbol Neg_class::checkType(){
     Symbol ct1 = e1->checkType();
-    if (!strcmp(ct1->get_string(), "Int") || !strcmp(ct1->get_string(), "Float"))
+    if (sameType(ct1, Int) || sameType(ct1, Float))
     {
         setType(ct1);
         return type;
@@ -454,22 +458,22 @@ Symbol Neg_class::checkType(){
 
 Symbol Lt_class::checkType(){
     Symbol ct1 = e1->checkType(), ct2 = e2->checkType();
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Int) && sameType(ct2, Int))
     {
         setType(Bool);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Float") && !strcmp(ct2->get_string(), "Float"))
+    if (sameType(ct1, Float) && sameType(ct2, Float))
     {
         setType(Bool);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Float"))
+    if (sameType(ct1, Int) && sameType(ct2, Float))
     {
         setType(Bool);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Float") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Float) && sameType(ct2, Int))
     {
         setType(Bool);
         return type;
@@ -481,22 +485,22 @@ Symbol Lt_class::checkType(){
 
 Symbol Le_class::checkType(){
     Symbol ct1 = e1->checkType(), ct2 = e2->checkType();
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Int) && sameType(ct2, Int))
     {
         setType(Bool);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Float") && !strcmp(ct2->get_string(), "Float"))
+    if (sameType(ct1, Float) && sameType(ct2, Float))
     {
         setType(Bool);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Float"))
+    if (sameType(ct1, Int) && sameType(ct2, Float))
     {
         setType(Bool);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Float") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Float) && sameType(ct2, Int))
     {
         setType(Bool);
         return type;
@@ -508,27 +512,27 @@ Symbol Le_class::checkType(){
 
 Symbol Equ_class::checkType(){
     Symbol ct1 = e1->checkType(), ct2 = e2->checkType();
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Int) && sameType(ct2, Int))
     {
         setType(Bool);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Float") && !strcmp(ct2->get_string(), "Float"))
+    if (sameType(ct1, Float) && sameType(ct2, Float))
     {
         setType(Bool);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Float"))
+    if (sameType(ct1, Int) && sameType(ct2, Float))
     {
         setType(Bool);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Float") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Float) && sameType(ct2, Int))
     {
         setType(Bool);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Bool") && !strcmp(ct2->get_string(), "Bool"))
+    if (sameType(ct1, Bool) && sameType(ct2, Bool))
     {
         setType(Bool);
         return type;
@@ -540,27 +544,27 @@ Symbol Equ_class::checkType(){
 
 Symbol Neq_class::checkType(){
     Symbol ct1 = e1->checkType(), ct2 = e2->checkType();
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Int) && sameType(ct2, Int))
     {
         setType(Bool);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Float") && !strcmp(ct2->get_string(), "Float"))
+    if (sameType(ct1, Float) && sameType(ct2, Float))
     {
         setType(Bool);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Float"))
+    if (sameType(ct1, Int) && sameType(ct2, Float))
     {
         setType(Bool);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Float") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Float) && sameType(ct2, Int))
     {
         setType(Bool);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Bool") && !strcmp(ct2->get_string(), "Bool"))
+    if (sameType(ct1, Bool) && sameType(ct2, Bool))
     {
         setType(Bool);
         return type;
@@ -572,22 +576,22 @@ Symbol Neq_class::checkType(){
 
 Symbol Ge_class::checkType(){
     Symbol ct1 = e1->checkType(), ct2 = e2->checkType();
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Int) && sameType(ct2, Int))
     {
         setType(Bool);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Float") && !strcmp(ct2->get_string(), "Float"))
+    if (sameType(ct1, Float) && sameType(ct2, Float))
     {
         setType(Bool);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Float"))
+    if (sameType(ct1, Int) && sameType(ct2, Float))
     {
         setType(Bool);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Float") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Float) && sameType(ct2, Int))
     {
         setType(Bool);
         return type;
@@ -599,22 +603,22 @@ Symbol Ge_class::checkType(){
 
 Symbol Gt_class::checkType(){
     Symbol ct1 = e1->checkType(), ct2 = e2->checkType();
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Int) && sameType(ct2, Int))
     {
         setType(Bool);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Float") && !strcmp(ct2->get_string(), "Float"))
+    if (sameType(ct1, Float) && sameType(ct2, Float))
     {
         setType(Bool);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Float"))
+    if (sameType(ct1, Int) && sameType(ct2, Float))
     {
         setType(Bool);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Float") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Float) && sameType(ct2, Int))
     {
         setType(Bool);
         return type;
@@ -626,9 +630,9 @@ Symbol Gt_class::checkType(){
 
 Symbol And_class::checkType(){
     Symbol ct1 = e1->checkType(), ct2 = e2->checkType();
-    if (!strcmp(ct1->get_string(), "Bool") && !strcmp(ct2->get_string(), "Bool"))
+    if (sameType(ct1, Bool) && sameType(ct2, Bool))
     {
-        setType(ct1);
+        setType(Bool);
         return type;
     }
     semant_error(this)<<"Cannot use && between "<<ct1<<" and "<<ct2<<".\n";
@@ -638,9 +642,9 @@ Symbol And_class::checkType(){
 
 Symbol Or_class::checkType(){
     Symbol ct1 = e1->checkType(), ct2 = e2->checkType();
-    if (!strcmp(ct1->get_string(), "Bool") && !strcmp(ct2->get_string(), "Bool"))
+    if (sameType(ct1, Bool) && sameType(ct2, Bool))
     {
-        setType(ct1);
+        setType(Bool);
         return type;
     }
     semant_error(this)<<"Cannot use || between "<<ct1<<" and "<<ct2<<".\n";
@@ -650,14 +654,14 @@ Symbol Or_class::checkType(){
 
 Symbol Xor_class::checkType(){
     Symbol ct1 = e1->checkType(), ct2 = e2->checkType();
-    if (!strcmp(ct1->get_string(), "Bool") && !strcmp(ct2->get_string(), "Bool"))
+    if (sameType(ct1, Bool) && sameType(ct2, Bool))
     {
-        setType(ct1);
+        setType(Bool);
         return type;
     }
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Int) && sameType(ct2, Int))
     {
-        setType(ct1);
+        setType(Int);
         return type;
     }
     semant_error(this)<<"Cannot use ^ between "<<ct1<<" and "<<ct2<<".\n";
@@ -667,9 +671,9 @@ Symbol Xor_class::checkType(){
 
 Symbol Not_class::checkType(){
     Symbol ct1 = e1->checkType();
-    if (!strcmp(ct1->get_string(), "Bool"))
+    if (sameType(ct1, Bool))
     {
-        setType(ct1);
+        setType(Bool);
         return type;
     }
     semant_error(this)<<"Cannot use ! upon "<<ct1<<".\n";
@@ -679,9 +683,9 @@ Symbol Not_class::checkType(){
 
 Symbol Bitand_class::checkType(){
     Symbol ct1 = e1->checkType(), ct2 = e2->checkType();
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Int) && sameType(ct2, Int))
     {
-        setType(ct1);
+        setType(Int);
         return type;
     }
     semant_error(this)<<"Cannot use & between "<<ct1<<" and "<<ct2<<".\n";
@@ -691,9 +695,9 @@ Symbol Bitand_class::checkType(){
 
 Symbol Bitor_class::checkType(){
     Symbol ct1 = e1->checkType(), ct2 = e2->checkType();
-    if (!strcmp(ct1->get_string(), "Int") && !strcmp(ct2->get_string(), "Int"))
+    if (sameType(ct1, Int) && sameType(ct2, Int))
     {
-        setType(ct1);
+        setType(Int);
         return type;
     }
     semant_error(this)<<"Cannot use | between "<<ct1<<" and "<<ct2<<".\n";
@@ -703,9 +707,9 @@ Symbol Bitor_class::checkType(){
 
 Symbol Bitnot_class::checkType(){
     Symbol ct1 = e1->checkType();
-    if (!strcmp(ct1->get_string(), "Int"))
+    if (sameType(ct1, Int))
     {
-        setType(ct1);
+        setType(Int);
         return type;
     }
     semant_error(this)<<"Cannot use unary op ~ upon "<<ct1<<".\n";
