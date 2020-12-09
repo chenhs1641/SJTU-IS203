@@ -320,7 +320,7 @@ Symbol Assign_class::checkType(){
     }
     Symbol value_type = value->checkType();
     if (!sameType(value_type, type))
-        semant_error(this)<<"Right value must have type "<<type<<" , got "<<value_type<<"\n";
+        semant_error(this)<<"Right value must have type "<<type<<" , got "<<value_type<<".\n";
     return type;
 }
 
@@ -346,7 +346,7 @@ Symbol Add_class::checkType(){
         setType(Float);
         return type;
     }
-    semant_error(this)<<"cannot add a "<<ct1<<" and a "<<ct2<<".\n";
+    semant_error(this)<<"Cannot add a "<<ct1<<" and a "<<ct2<<".\n";
     setType(Void);
     return type;
 }
@@ -373,7 +373,7 @@ Symbol Minus_class::checkType(){
         setType(Float);
         return type;
     }
-    semant_error(this)<<"cannot minus a "<<ct1<<" and a "<<ct2<<".\n";
+    semant_error(this)<<"Cannot minus a "<<ct1<<" by a "<<ct2<<".\n";
     setType(Void);
     return type;
 }
@@ -400,7 +400,7 @@ Symbol Multi_class::checkType(){
         setType(Float);
         return type;
     }
-    semant_error(this)<<"cannot multi a "<<ct1<<" and a "<<ct2<<".\n";
+    semant_error(this)<<"Cannot multiply a "<<ct1<<" with a "<<ct2<<".\n";
     setType(Void);
     return type;
 }
@@ -427,7 +427,7 @@ Symbol Divide_class::checkType(){
         setType(Float);
         return type;
     }
-    semant_error(this)<<"cannot div a "<<ct1<<" and a "<<ct2<<".\n";
+    semant_error(this)<<"Cannot divide a "<<ct1<<" by a "<<ct2<<".\n";
     setType(Void);
     return type;
 }
@@ -439,7 +439,7 @@ Symbol Mod_class::checkType(){
         setType(Int);
         return type;
     }
-    semant_error(this)<<"cannot mod a "<<ct1<<" and a "<<ct2<<".\n";
+    semant_error(this)<<"Cannot mod a "<<ct1<<" and a "<<ct2<<".\n";
     setType(Void);
     return type;
 }
@@ -478,7 +478,7 @@ Symbol Lt_class::checkType(){
         setType(Bool);
         return type;
     }
-    semant_error(this)<<"Cannot compare a "<<ct1<<" and a "<<ct2<<".\n";
+    semant_error(this)<<"Cannot compare a "<<ct1<<" and a "<<ct2<<"(less).\n";
     setType(Void);
     return type;
 }
@@ -505,7 +505,7 @@ Symbol Le_class::checkType(){
         setType(Bool);
         return type;
     }
-    semant_error(this)<<"Cannot compare a "<<ct1<<" and a "<<ct2<<".\n";
+    semant_error(this)<<"Cannot compare a "<<ct1<<" and a "<<ct2<<"(less than or equal).\n";
     setType(Void);
     return type;
 }
@@ -537,7 +537,7 @@ Symbol Equ_class::checkType(){
         setType(Bool);
         return type;
     }
-    semant_error(this)<<"Cannot compare a "<<ct1<<" and a "<<ct2<<".\n";
+    semant_error(this)<<"Cannot compare a "<<ct1<<" and a "<<ct2<<"(equal).\n";
     setType(Void);
     return type;
 }
@@ -569,7 +569,7 @@ Symbol Neq_class::checkType(){
         setType(Bool);
         return type;
     }
-    semant_error(this)<<"Cannot compare a "<<ct1<<" and a "<<ct2<<".\n";
+    semant_error(this)<<"Cannot compare a "<<ct1<<" and a "<<ct2<<"(not equal).\n";
     setType(Void);
     return type;
 }
@@ -596,7 +596,7 @@ Symbol Ge_class::checkType(){
         setType(Bool);
         return type;
     }
-    semant_error(this)<<"Cannot compare a "<<ct1<<" and a "<<ct2<<".\n";
+    semant_error(this)<<"Cannot compare a "<<ct1<<" and a "<<ct2<<"(greater than or equal).\n";
     setType(Void);
     return type;
 }
@@ -623,7 +623,7 @@ Symbol Gt_class::checkType(){
         setType(Bool);
         return type;
     }
-    semant_error(this)<<"Cannot compare a "<<ct1<<" and a "<<ct2<<".\n";
+    semant_error(this)<<"Cannot compare a "<<ct1<<" and a "<<ct2<<"(greater).\n";
     setType(Void);
     return type;
 }
@@ -635,7 +635,7 @@ Symbol And_class::checkType(){
         setType(Bool);
         return type;
     }
-    semant_error(this)<<"Cannot use && between "<<ct1<<" and "<<ct2<<".\n";
+    semant_error(this)<<"Cannot use and(&&) between "<<ct1<<" and "<<ct2<<".\n";
     setType(Void);
     return type;
 }
@@ -647,7 +647,7 @@ Symbol Or_class::checkType(){
         setType(Bool);
         return type;
     }
-    semant_error(this)<<"Cannot use || between "<<ct1<<" and "<<ct2<<".\n";
+    semant_error(this)<<"Cannot use or(||) between "<<ct1<<" and "<<ct2<<".\n";
     setType(Void);
     return type;
 }
@@ -664,7 +664,7 @@ Symbol Xor_class::checkType(){
         setType(Int);
         return type;
     }
-    semant_error(this)<<"Cannot use ^ between "<<ct1<<" and "<<ct2<<".\n";
+    semant_error(this)<<"Cannot use xor(^) between "<<ct1<<" and "<<ct2<<".\n";
     setType(Void);
     return type;
 }
@@ -676,7 +676,7 @@ Symbol Not_class::checkType(){
         setType(Bool);
         return type;
     }
-    semant_error(this)<<"Cannot use ! upon "<<ct1<<".\n";
+    semant_error(this)<<"Cannot use not(!) upon "<<ct1<<".\n";
     setType(Void);
     return type;
 }
@@ -688,7 +688,7 @@ Symbol Bitand_class::checkType(){
         setType(Int);
         return type;
     }
-    semant_error(this)<<"Cannot use & between "<<ct1<<" and "<<ct2<<".\n";
+    semant_error(this)<<"Cannot use bit-and(&) between "<<ct1<<" and "<<ct2<<".\n";
     setType(Void);
     return type;
 }
@@ -700,7 +700,7 @@ Symbol Bitor_class::checkType(){
         setType(Int);
         return type;
     }
-    semant_error(this)<<"Cannot use | between "<<ct1<<" and "<<ct2<<".\n";
+    semant_error(this)<<"Cannot use bit-or(|) between "<<ct1<<" and "<<ct2<<".\n";
     setType(Void);
     return type;
 }
@@ -712,7 +712,7 @@ Symbol Bitnot_class::checkType(){
         setType(Int);
         return type;
     }
-    semant_error(this)<<"Cannot use unary op ~ upon "<<ct1<<".\n";
+    semant_error(this)<<"Cannot use unary not(~) upon "<<ct1<<".\n";
     setType(Void);
     return type;
 }

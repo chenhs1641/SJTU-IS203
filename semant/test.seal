@@ -2,44 +2,65 @@
 this a correct example of SEAL 
 */
 func print1f() Void{
-    return;
+    return c;
 }
 var c Int;
-func printtf(ee Int,ef Int,eg Int) Void{
-    var c Int;
-    //var d Void;
-    var printf Bool;
+func printtf(ee Int,ee Int,eg Int) Void{
+    var c Float;
+    var d Void;
+    var printf Int;
 ee;
-//for "true";333;"902190*9191+2" { break;}
+continue;
+c == printf;
+for "true";333;"902190*9191+2" { break;}
+while ("eee") {;}
 return ;
-//break;
-//continue;
+break;
+continue;
 }
+func main() String{}
 func main() Void{
 var a Int;
     main();
-    return ;
+    printf();
+    printtf(1,2,3,3);
+    printtf(1,2);
+    printtf("tttt",2,3);
+    i = printtf("ttt",2);
+    printf(111,222);
+    a = (1 == 2) + true;
+    return x;
 }
 
-/*var i Int;
+func printf() Void{
+    1 + true;
+    1- true;
+    1* true;
+    1/ true;
+    1% true;
+    - true;
+     a = t = 3.555585;
+}
+
+var i Int;
 var i Bool;
-var k Float;*/
-//var i Void;
+var k Float;
+var i Void;
 func iii() Int{
-//i;
+i;
 return 0;
 }
-/*func mai01n(aaa Int, a2aa Int) Void{
+func mai01n(aaa Int, a2aa Int) Void{
     return;
     i = i + i;
     m(a,b,c);
     i ^ k;
-    //1 < "true";
-    //1 <= true; 1> "f"; 2 == `1`; 2!="!!!"; 2>=false;*/
-/*1 && 2;
+    1 < "true";
+    1 <= true; 1> "f"; 2 == `1`; 2!="!!!"; 2>=false;
+1 && 2;
 !1;
 true | false;
 true & false;
-~3.5556;*/
-//i = c;
-//}
+~3.5556;
+i = c;
+}
