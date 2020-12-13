@@ -183,8 +183,10 @@ void CallDecl_class::check() {
             objectEnv.addid(curr_var->getName(), new Symbol(curr_var->getType()));
         }
     }
+    objectEnv.enterscope();
     this->getBody()->check(this->getType());
     if (flag0) semant_error(this)<<"Function "<<this->getName()<<" must have an overall return statement.\n";
+    objectEnv.exitscope();
     objectEnv.exitscope();
 }
 

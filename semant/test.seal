@@ -3,6 +3,7 @@ this a correct example of SEAL
 */
 func print1f(a Bool,b Int,c Int) Void{
     var hhhh Void;
+    var c Bool;
     print1f(a,hhhh,c);
     return c;
 }
