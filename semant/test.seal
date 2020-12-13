@@ -1,8 +1,33 @@
 /* 
 this a correct example of SEAL 
 */
-func print1f() Void{
+func print1f(a Bool,b Int,c Int) Void{
+    var hhhh Void;
+    print1f(a,hhhh,c);
     return c;
+}
+func toomuch(a Bool,
+a Int,
+c Int,
+d Float,
+e Void,
+f Int,
+g Bool,
+h Bool,
+h Bool,
+h Bool) Bool
+{
+    toomuch(a,
+    b,
+    c,
+    d,
+    e,
+    f,
+    g,
+    h,
+    hhhh);
+    toomuch(a);
+    return g;
 }
 var c Int;
 func printtf(ee Int,ee Int,eg Int) Void{

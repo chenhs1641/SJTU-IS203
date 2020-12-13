@@ -168,13 +168,15 @@ void CallDecl_class::check() {
     objectEnv.enterscope();
     flag0 = 1;
     for (int i = paras->first(); paras->more(i); i = paras->next(i))
+        if (i == 6) semant_error(this)<<"Function "<<this->getName()<<" has more than 6 parameters.\n";
+    for (int i = paras->first(); paras->more(i); i = paras->next(i))
     {
         Variable curr_var = paras->nth(i);
         if (!isValidTypeName(curr_var->getType()))
-            semant_error(curr_var)<<"Function "<<this->getName()
+            semant_error(this)<<"Function "<<this->getName()
             <<" 's parameter has an invalid type Void.\n";
         else if (objectEnv.probe(curr_var->getName()) != NULL)
-            semant_error(curr_var)<<"Function "<<this->getName()
+            semant_error(this)<<"Function "<<this->getName()
             <<" 's parameter has a duplicate name "<<curr_var->getName()<<".\n";
         else
         {
@@ -282,7 +284,7 @@ Symbol Call_class::checkType(){
     {
         Symbol curr_expr_type = actuals->nth(i)->checkType();
         Symbol curr_para_type = curr_paras->nth(j)->getType();
-        if (!sameType(curr_expr_type, curr_para_type))
+        if (!sameType(curr_expr_type, curr_para_type) && !sameType(curr_expr_type, Void))
         {
             semant_error(this)<<"Function "<<name<<", the "<<i + 1<<" parameter should be "
             <<curr_para_type<<" but provided a "<<curr_expr_type<<".\n";
