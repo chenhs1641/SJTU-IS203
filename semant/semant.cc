@@ -149,7 +149,7 @@ static void check_main() {
         return;
     }
     Decl curr_decl = *(objectEnv2.probe(Main));
-    Variables curr_paras = curr_decl->getVariables();
+    Variables curr_paras = (CallDecl(curr_decl))->getVariables();
     Symbol return_type = curr_decl->getType();
     if (curr_paras->more(curr_paras->first())) semant_error(curr_decl)<<"Main function should not have any parameters.\n";
     if (isValidTypeName(return_type)) semant_error(curr_decl)<<"Main function should have return type Void.\n";
@@ -278,7 +278,7 @@ Symbol Call_class::checkType(){
         return type;
     }
     Decl curr_decl = *(objectEnv2.probe(name));
-    Variables curr_paras = curr_decl->getVariables();
+    Variables curr_paras = ((CallDecl)curr_decl)->getVariables();
     Symbol return_type = curr_decl->getType();
     int i = actuals->first();
     int j = curr_paras->first();

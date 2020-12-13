@@ -16,9 +16,6 @@ public:
     virtual bool isCallDecl() = 0;
     virtual Symbol getName() = 0;
     virtual Symbol getType() = 0;
-    // add:
-    virtual Variables getVariables() = 0;
-    // ..
     virtual void check() = 0;
 };
 
@@ -50,10 +47,6 @@ public:
    }
    Symbol getName() { return variable->getName(); }
    Symbol getType() { return variable->getType(); }
-
-   // add:
-   Variables getVariables(){Variables variables; return variables;}
-   // ..
 
    Decl copy_Decl();
    void check();
