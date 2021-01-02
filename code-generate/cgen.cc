@@ -20,6 +20,12 @@ static char *CALL_XMM[] = {XMM0, XMM1, XMM2, XMM3};
 void cgen_helper(Decls decls, ostream& s);
 void code(Decls decls, ostream& s);
 
+int rsp = -56, pos = 0;
+char *sym[6] = {new char, new char, new char, new char, new char, new char};
+bool in_ex[6] = {0, 0, 0, 0, 0, 0};
+
+typedef SymbolTable<Symbol, char> ObjectEnvironment; // name, type
+ObjectEnvironment objectEnv00;
 //////////////////////////////////////////////////////////////////
 //
 //
@@ -432,11 +438,37 @@ static void emit_global_bool(Symbol name, ostream& s) {
 
 void code_global_data(Decls decls, ostream &str)
 {
-
+  bool have_data = 0;
+  for (int i = decls->first(); decls->more(i); i = decls->next(i))
+  {
+    if (!decls->nth(i)->isCallDecl())
+    {
+      if (!have_data)
+      {
+        str << DATA << endl;
+        have_data = 1;
+      }
+      if (decls->nth(i)->getType() == String) continue;
+      Symbol name = decls->nth(i)->getName();
+      if (decls->nth(i)->getType() == Int) emit_global_int(name, str);
+      if (decls->nth(i)->getType() == Float) emit_global_float(name, str);
+      if (decls->nth(i)->getType() == Bool) emit_global_bool(name, str);
+    }
+  }
 }
 
 void code_calls(Decls decls, ostream &str) {
-
+  str << SECTION << RODATA << endl;
+  // find strings for label LCxs;
+  stringtable.code_string_table(str);
+  str << TEXT << endl;
+  for (int i = decls->first(); decls->more(i); i = decls->next(i))
+  {
+    if (decls->nth(i)->isCallDecl())
+    {
+      decls->nth(i)->code(str);
+    }
+  }
 }
 
 //***************************************************
@@ -466,7 +498,6 @@ void code(Decls decls, ostream& s)
 {
   if (cgen_debug) cout << "Coding global data" << endl;
   code_global_data(decls, s);
-
   if (cgen_debug) cout << "Coding calls" << endl;
   code_calls(decls, s);
 }
@@ -482,27 +513,156 @@ void code(Decls decls, ostream& s)
 //*****************************************************************
 
 void CallDecl_class::code(ostream &s) {
-
+  Symbol name = this->getName();
+  s << GLOBAL << name << endl;
+  s << SYMBOL_TYPE << name << COMMA << FUNCTION << endl;
+  s << name << ":" << endl;
+  emit_push(RBP, s);
+  emit_mov(RSP, RBP, s);
+  emit_push(RBX, s);
+  emit_push(R10, s);
+  emit_push(R11, s);
+  emit_push(R12, s);
+  emit_push(R13, s);
+  emit_push(R14, s);
+  emit_push(R15, s);
+  objectEnv00.enterscope();
+  int regs = 0, xmm = 0;
+  for (int i = paras->first(); paras->more(i); i = paras->next(i))
+  {
+    emit_sub("$8", RSP, s);
+    rsp -= 8;
+    char* str = new char;
+    sprintf(str, "%d(%%rbp)", rsp);
+    objectEnv00.addid(paras->nth(i)->getName(), str);
+    if (paras->nth(i)->getType() == Int || paras->nth(i)->getType() == Bool)
+    {
+      emit_rmmov(CALL_REGS[regs], rsp, RBP, s);
+      regs ++;
+    }
+    else if (paras->nth(i)->getType() == Float)
+    {
+      emit_mov(CALL_XMM[xmm], str, s);
+      xmm ++;
+    }
+  }
+  this->getBody()->code(s);
+  objectEnv00.exitscope();
+  s << SIZE << name << COMMA << ".-" << name << endl;
+  rsp = 0;
 }
 
 void StmtBlock_class::code(ostream &s){
- 
+  for (int i = vars->first(); vars->more(i); i = vars->next(i))
+  {
+    emit_sub("$8", RSP, s);
+    rsp -= 8;
+    char* str = new char;
+    sprintf(str, "%d(%%rbp)", rsp);
+    objectEnv00.addid(vars->nth(i)->getName(), str);
+    // vars->nth(i)->***
+    // do sth;
+    // bind name and rsp!!!
+  }
+  for (int i = stmts->first(); stmts->more(i); i = stmts->next(i))
+  {
+    stmts->nth(i)->code(s);
+  }
 }
 
 void IfStmt_class::code(ostream &s) {
- 
+  int thispos = pos;
+  pos += 2;
+  in_ex[0] = 1;
+  condition->code(s);
+  in_ex[0] = 0;
+  emit_mov(sym[0], RAX, s);
+  emit_test(RAX, RAX, s);
+  char* str = new char;
+  sprintf(str, ".POS%d", thispos);
+  emit_jz(str, s);
+  objectEnv00.enterscope();
+  thenexpr->code(s);
+  objectEnv00.exitscope();
+  sprintf(str, ".POS%d", thispos + 1);
+  emit_jmp(str, s);
+  sprintf(str, ".POS%d", thispos);
+  emit_position(str, s);
+  objectEnv00.enterscope();
+  elseexpr->code(s);
+  objectEnv00.exitscope();
+  sprintf(str, ".POS%d", thispos + 1);
+  emit_position(str, s);
 }
 
 void WhileStmt_class::code(ostream &s) {
- 
+  int thispos = pos;
+  pos += 2;
+  char* str = new char;
+  sprintf(str, ".POS%d", thispos);
+  emit_position(str, s);
+  in_ex[0] = 1;
+  condition->code(s);
+  in_ex[0] = 0;
+  emit_mov(sym[0], RAX, s);
+  emit_test(RAX, RAX, s);
+  sprintf(str, ".POS%d", thispos + 1);
+  emit_jz(str, s);
+  objectEnv00.enterscope();
+  body->code(s);
+  objectEnv00.exitscope();
+  sprintf(str, ".POS%d", thispos);
+  emit_jmp(str, s);
+  sprintf(str, ".POS%d", thispos + 1);
+  emit_position(str, s);
 }
 
 void ForStmt_class::code(ostream &s) {
- 
+  int thispos = pos;
+  pos += 3;
+  initexpr->code(s);
+  char* str = new char;
+  sprintf(str, ".POS%d", thispos);
+  emit_position(str, s);
+  in_ex[0] = 1;
+  condition->code(s);
+  in_ex[0] = 0;
+  emit_mov(sym[0], RAX, s);
+  emit_test(RAX, RAX, s);
+  sprintf(str, ".POS%d", thispos + 2);
+  emit_jz(str, s);
+  objectEnv00.enterscope();
+  body->code(s);
+  objectEnv00.exitscope();
+  sprintf(str, ".POS%d", thispos + 1);
+  emit_position(str, s);
+  loopact->code(s);
+  sprintf(str, ".POS%d", thispos);
+  emit_jmp(str, s);
+  sprintf(str, ".POS%d", thispos + 2);
+  emit_position(str, s);
 }
 
 void ReturnStmt_class::code(ostream &s) {
-  
+  if (!value->is_empty_Expr())
+  {
+    in_ex[0] = 1;
+    value->code(s);
+    in_ex[0] = 0;
+    if (value->getType() == Float)
+      emit_movaps(sym[0], XMM0, s);
+    else
+      emit_mov(sym[0], RAX, s);
+  }
+  emit_pop(R15, s);
+  emit_pop(R14, s);
+  emit_pop(R13, s);
+  emit_pop(R12, s);
+  emit_pop(R11, s);
+  emit_pop(R10, s);
+  emit_pop(RBX, s);
+  emit_leave(s);
+  emit_ret(s);
 }
 
 void ContinueStmt_class::code(ostream &s) {
@@ -513,49 +673,394 @@ void BreakStmt_class::code(ostream &s) {
 }
 
 void Call_class::code(ostream &s) {
-  
-  //
-  /*
-   if function name is printf
-
+  if (this->getName() == print)
+  {
     // please set %eax to the number of Float parameters, num.
-    //  把%eax赋值为Float类型的参数个数, num
+    // 把%eax赋值为Float类型的参数个数, num
+    int n = 0;
+    char *num = new char;
+    for (int i = actuals->first(); actuals->more(i); i = actuals->next(i))
+    {
+      if (actuals->nth(i)->getType() == Float) n ++;
+      in_ex[i] = 1;
+      actuals->nth(i)->code(s);
+      in_ex[i] = 0;
+    }
+    int regs = 0, xmm = 0;
+    for (int i = actuals->first(); actuals->more(i); i = actuals->next(i))
+      if (actuals->nth(i)->getType() == Int || actuals->nth(i)->getType() == Bool || actuals->nth(i)->getType() == String)
+      {
+        emit_mov(sym[i], CALL_REGS[regs], s);
+        regs ++;
+      }
+      else if (actuals->nth(i)->getType() == Float)
+      {
+        emit_movsd(sym[i], CALL_XMM[xmm], s);
+        xmm ++;
+      }
     emit_sub("$8", RSP, s);
+    rsp -= 8;
+    sprintf(num, "%d", n);
     emit_irmovl(num, EAX, s);
     emit_call("printf", s);
-      
     return;
   }
-  */
-  //
+  else
+  {
+    bool tmp_inex[6];
+    char* tmp_sym[6] = {new char, new char, new char, new char, new char, new char};
+    for (int i = 0; i < 6; i ++)
+    {
+      tmp_inex[i] = in_ex[i];
+      in_ex[i] = 0;
+      strcpy(tmp_sym[i], sym[i]);
+    }
+    for (int i = actuals->first(); actuals->more(i); i = actuals->next(i))
+    {
+      in_ex[i] = 1;
+      actuals->nth(i)->code(s);
+      in_ex[i] = 0;
+    }
+    int regs = 0, xmm = 0;
+    for (int i = actuals->first(); actuals->more(i); i = actuals->next(i))
+      if (actuals->nth(i)->getType() == Int || actuals->nth(i)->getType() == Bool)
+      {
+        emit_mov(sym[i], CALL_REGS[regs], s);
+        regs ++;
+      }
+      else if (actuals->nth(i)->getType() == Float)
+      {
+        emit_movsd(sym[i], CALL_XMM[xmm], s);
+        xmm ++;
+      }
+    emit_call(this->getName()->get_string(), s);
+    if (this->getType() == Int || this->getType() == Bool || this->getType() == Float)
+    {
+      emit_sub("$8", RSP, s);
+      rsp -= 8;
+      if (this->getType() == Float)
+      {
+        char* s0 = new char;
+        sprintf(s0, "%d(%%rbp)", rsp);
+        emit_movsd(XMM0, s0, s);
+      }
+      else
+        emit_rmmov(RAX, rsp, RBP, s);
+      for (int i = 0; i < 6; i ++)
+      {
+        in_ex[i] = tmp_inex[i];
+        strcpy(sym[i], tmp_sym[i]);
+      }
+      char* str = new char;
+      sprintf(str, "%d(%%rbp)", rsp);
+      for (int i = 0;i < 6;i ++)
+        if (in_ex[i])
+          strcpy(sym[i], str);
+    }
+  }
 }
 
 void Actual_class::code(ostream &s) {
-  
+  if (!this->is_empty_Expr()) expr->code(s);
 }
 
 void Assign_class::code(ostream &s) {
- 
+  bool tmp_inex[6];
+  char* tmp_sym[6] = {new char, new char, new char, new char, new char, new char};
+  for (int i = 0; i < 6; i ++)
+  {
+    tmp_inex[i] = in_ex[i];
+    in_ex[i] = 0;
+    strcpy(tmp_sym[i], sym[i]);
+  }
+  in_ex[0] = 1;
+  value->code(s);
+  in_ex[0] = 0;
+  emit_mov(sym[0], RAX, s);
+  char* str = new char;
+  if (objectEnv00.probe(lvalue) != NULL)
+    strcpy(str, objectEnv00.probe(lvalue));
+  else if (objectEnv00.lookup(lvalue) != NULL)
+    strcpy(str, objectEnv00.lookup(lvalue));
+  else
+  {
+    strcpy(str, lvalue->get_string());
+    strcat(str, "(");
+    strcat(str, RIP);
+    strcat(str, ")");
+  }
+  emit_mov(RAX, str, s);
+  for (int i = 0; i < 6; i ++)
+  {
+    in_ex[i] = tmp_inex[i];
+    strcpy(sym[i], tmp_sym[i]);
+  }
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Add_class::code(ostream &s) {
-  
+  bool tmp_inex[6];
+  char* tmp_sym[6] = {new char, new char, new char, new char, new char, new char};
+  for (int i = 0; i < 6; i ++)
+  {
+    tmp_inex[i] = in_ex[i];
+    in_ex[i] = 0;
+    strcpy(tmp_sym[i], sym[i]);
+  }
+  in_ex[0] = 1;
+  e1->code(s);
+  in_ex[0] = 0;
+  in_ex[1] = 1;
+  e2->code(s);
+  in_ex[1] = 0;
+  emit_sub("$8", RSP, s);
+    rsp -= 8;
+  if (e1->getType() == Int && e2->getType() == Int)
+  {
+    emit_mov(sym[0], RBX, s);
+    emit_mov(sym[1], R10, s);
+    emit_add(RBX, R10, s);
+    emit_rmmov(R10, rsp, RBP, s);
+  }
+  else
+  {
+    if (e1->getType() == Int)
+    {
+      emit_mov(sym[0], RBX, s);
+      emit_int_to_float(RBX, XMM4, s);
+    }
+    else
+      emit_movsd(sym[0], XMM4, s);
+    if (e2->getType() == Int)
+    {
+      emit_mov(sym[1], RBX, s);
+      emit_int_to_float(RBX, XMM5, s);
+    }
+    else
+      emit_movsd(sym[1], XMM5, s);
+    emit_addsd(XMM4, XMM5, s);
+    char* s0 = new char;
+    sprintf(s0, "%d(%%rbp)", rsp);
+    emit_movsd(XMM5, s0, s);
+  }
+  for (int i = 0; i < 6; i ++)
+  {
+    in_ex[i] = tmp_inex[i];
+    strcpy(sym[i], tmp_sym[i]);
+  }
+  char* str = new char;
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Minus_class::code(ostream &s) {
- 
+  bool tmp_inex[6];
+  char* tmp_sym[6] = {new char, new char, new char, new char, new char, new char};
+  for (int i = 0; i < 6; i ++)
+  {
+    tmp_inex[i] = in_ex[i];
+    in_ex[i] = 0;
+    strcpy(tmp_sym[i], sym[i]);
+  }
+  in_ex[0] = 1;
+  e1->code(s);
+  in_ex[0] = 0;
+  in_ex[1] = 1;
+  e2->code(s);
+  in_ex[1] = 0;
+  emit_sub("$8", RSP, s);
+  rsp -= 8;
+  if (e1->getType() == Int && e2->getType() == Int)
+  {
+    emit_mov(sym[0], RBX, s);
+    emit_mov(sym[1], R10, s);
+    emit_sub(R10, RBX, s);
+    emit_rmmov(RBX, rsp, RBP, s);
+  }
+  else
+  {
+    if (e1->getType() == Int)
+    {
+      emit_mov(sym[0], RBX, s);
+      emit_int_to_float(RBX, XMM4, s);
+    }
+    else
+      emit_movsd(sym[0], XMM4, s);
+    if (e2->getType() == Int)
+    {
+      emit_mov(sym[1], RBX, s);
+      emit_int_to_float(RBX, XMM5, s);
+    }
+    else
+      emit_movsd(sym[1], XMM5, s);
+    emit_subsd(XMM5, XMM4, s);
+    char* s0 = new char;
+    sprintf(s0, "%d(%%rbp)", rsp);
+    emit_movsd(XMM4, s0, s);
+  }
+  for (int i = 0; i < 6; i ++)
+  {
+    in_ex[i] = tmp_inex[i];
+    strcpy(sym[i], tmp_sym[i]);
+  }
+  char* str = new char;
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Multi_class::code(ostream &s) {
- 
+  bool tmp_inex[6];
+  char* tmp_sym[6] = {new char, new char, new char, new char, new char, new char};
+  for (int i = 0; i < 6; i ++)
+  {
+    tmp_inex[i] = in_ex[i];
+    in_ex[i] = 0;
+    strcpy(tmp_sym[i], sym[i]);
+  }
+  in_ex[0] = 1;
+  e1->code(s);
+  in_ex[0] = 0;
+  in_ex[1] = 1;
+  e2->code(s);
+  in_ex[1] = 0;
+  emit_sub("$8", RSP, s);
+  rsp -= 8;
+  if (e1->getType() == Int && e2->getType() == Int)
+  {
+    emit_mov(sym[0], RBX, s);
+    emit_mov(sym[1], R10, s);
+    emit_mul(R10, RBX, s);
+    emit_rmmov(RBX, rsp, RBP, s);
+  }
+  else
+  {
+    if (e1->getType() == Int)
+    {
+      emit_mov(sym[0], RBX, s);
+      emit_int_to_float(RBX, XMM4, s);
+    }
+    else
+      emit_movsd(sym[0], XMM4, s);
+    if (e2->getType() == Int)
+    {
+      emit_mov(sym[1], RBX, s);
+      emit_int_to_float(RBX, XMM5, s);
+    }
+    else
+      emit_movsd(sym[1], XMM5, s);
+    emit_mulsd(XMM5, XMM4, s);
+    char* s0 = new char;
+    sprintf(s0, "%d(%%rbp)", rsp);
+    emit_movsd(XMM4, s0, s);
+  }
+  for (int i = 0; i < 6; i ++)
+  {
+    in_ex[i] = tmp_inex[i];
+    strcpy(sym[i], tmp_sym[i]);
+  }
+  char* str = new char;
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Divide_class::code(ostream &s) {
- 
+  bool tmp_inex[6];
+  char* tmp_sym[6] = {new char, new char, new char, new char, new char, new char};
+  for (int i = 0; i < 6; i ++)
+  {
+    tmp_inex[i] = in_ex[i];
+    in_ex[i] = 0;
+    strcpy(tmp_sym[i], sym[i]);
+  }
+  in_ex[0] = 1;
+  e1->code(s);
+  in_ex[0] = 0;
+  in_ex[1] = 1;
+  e2->code(s);
+  in_ex[1] = 0;
+  emit_sub("$8", RSP, s);
+  rsp -= 8;
+  if (e1->getType() == Int && e2->getType() == Int)
+  {
+    emit_mov(sym[0], RAX, s);
+    emit_cqto(s);
+    emit_mov(sym[1], RBX, s);
+    s << "\tidivq\t" << RBX << "\n";
+    emit_rmmov(RAX, rsp, RBP, s);
+  }
+  else
+  {
+    if (e1->getType() == Int)
+    {
+      emit_mov(sym[0], RBX, s);
+      emit_int_to_float(RBX, XMM4, s);
+    }
+    else
+      emit_movsd(sym[0], XMM4, s);
+    if (e2->getType() == Int)
+    {
+      emit_mov(sym[1], RBX, s);
+      emit_int_to_float(RBX, XMM5, s);
+    }
+    else
+      emit_movsd(sym[1], XMM5, s);
+    emit_divsd(XMM5, XMM4, s);
+    char* s0 = new char;
+    sprintf(s0, "%d(%%rbp)", rsp);
+    emit_movsd(XMM4, s0, s);
+  }
+  for (int i = 0; i < 6; i ++)
+  {
+    in_ex[i] = tmp_inex[i];
+    strcpy(sym[i], tmp_sym[i]);
+  }
+  char* str = new char;
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Mod_class::code(ostream &s) {
- 
+  bool tmp_inex[6];
+  char* tmp_sym[6] = {new char, new char, new char, new char, new char, new char};
+  for (int i = 0; i < 6; i ++)
+  {
+    tmp_inex[i] = in_ex[i];
+    in_ex[i] = 0;
+    strcpy(tmp_sym[i], sym[i]);
+  }
+  in_ex[0] = 1;
+  e1->code(s);
+  in_ex[0] = 0;
+  in_ex[1] = 1;
+  e2->code(s);
+  in_ex[1] = 0;
+  emit_sub("$8", RSP, s);
+  rsp -= 8;
+  emit_mov(sym[0], RAX, s);
+  emit_cqto(s);
+  emit_mov(sym[1], RBX, s);
+  s << "\tidivq\t" << RBX << "\n";
+  emit_rmmov(RDX, rsp, RBP, s);
+  for (int i = 0; i < 6; i ++)
+  {
+    in_ex[i] = tmp_inex[i];
+    strcpy(sym[i], tmp_sym[i]);
+  }
+  char* str = new char;
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Neg_class::code(ostream &s) {
@@ -563,19 +1068,201 @@ void Neg_class::code(ostream &s) {
 }
 
 void Lt_class::code(ostream &s) {
-  
+  bool tmp_inex[6];
+  char* tmp_sym[6] = {new char, new char, new char, new char, new char, new char};
+  for (int i = 0; i < 6; i ++)
+  {
+    tmp_inex[i] = in_ex[i];
+    in_ex[i] = 0;
+    strcpy(tmp_sym[i], sym[i]);
+  }
+  int thispos = pos;
+  pos += 2;
+  in_ex[0] = 1;
+  e1->code(s);
+  in_ex[0] = 0;
+  in_ex[1] = 1;
+  e2->code(s);
+  in_ex[1] = 0;
+  emit_sub("$8", RSP, s);
+  rsp -= 8;
+  emit_mov(sym[0], RAX, s);
+  emit_mov(sym[1], RDX, s);
+  emit_cmp(RDX, RAX, s);
+  char* str = new char;
+  sprintf(str, ".POS%d", thispos);
+  emit_jl(str, s);
+  emit_mov("$0", RAX, s);
+  sprintf(str, ".POS%d", thispos + 1);
+  emit_jmp(str, s);
+  sprintf(str, ".POS%d", thispos);
+  emit_position(str, s);
+  emit_mov("$1", RAX, s);
+  sprintf(str, ".POS%d", thispos + 1);
+  emit_position(str, s);
+  emit_rmmov(RAX, rsp, RBP, s);
+  for (int i = 0; i < 6; i ++)
+  {
+    in_ex[i] = tmp_inex[i];
+    strcpy(sym[i], tmp_sym[i]);
+  }
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Le_class::code(ostream &s) {
- 
+  bool tmp_inex[6];
+  char* tmp_sym[6] = {new char, new char, new char, new char, new char, new char};
+  for (int i = 0; i < 6; i ++)
+  {
+    tmp_inex[i] = in_ex[i];
+    in_ex[i] = 0;
+    strcpy(tmp_sym[i], sym[i]);
+  }
+  int thispos = pos;
+  pos += 2;
+  in_ex[0] = 1;
+  e1->code(s);
+  in_ex[0] = 0;
+  in_ex[1] = 1;
+  e2->code(s);
+  in_ex[1] = 0;
+  emit_sub("$8", RSP, s);
+  rsp -= 8;
+  emit_mov(sym[0], RAX, s);
+  emit_mov(sym[1], RDX, s);
+  emit_cmp(RDX, RAX, s);
+  char* str = new char;
+  sprintf(str, ".POS%d", thispos);
+  emit_jle(str, s);
+  emit_mov("$0", RAX, s);
+  sprintf(str, ".POS%d", thispos + 1);
+  emit_jmp(str, s);
+  sprintf(str, ".POS%d", thispos);
+  emit_position(str, s);
+  emit_mov("$1", RAX, s);
+  sprintf(str, ".POS%d", thispos + 1);
+  emit_position(str, s);
+  emit_rmmov(RAX, rsp, RBP, s);
+  for (int i = 0; i < 6; i ++)
+  {
+    in_ex[i] = tmp_inex[i];
+    strcpy(sym[i], tmp_sym[i]);
+  }
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Equ_class::code(ostream &s) {
- 
+    bool tmp_inex[6];
+  char* tmp_sym[6] = {new char, new char, new char, new char, new char, new char};
+  for (int i = 0; i < 6; i ++)
+  {
+    tmp_inex[i] = in_ex[i];
+    in_ex[i] = 0;
+    strcpy(tmp_sym[i], sym[i]);
+  }
+  int thispos = pos;
+  pos += 2;
+  in_ex[0] = 1;
+  e1->code(s);
+  in_ex[0] = 0;
+  in_ex[1] = 1;
+  e2->code(s);
+  in_ex[1] = 0;
+  emit_sub("$8", RSP, s);
+  rsp -= 8;
+  if (e1->getType() == Int && e2->getType() == Int)
+  {
+    emit_mov(sym[0], RAX, s);
+    emit_mov(sym[1], RDX, s);
+    emit_cmp(RDX, RAX, s);
+  }
+  else
+  {
+    emit_mov(sym[0], XMM1, s);
+    emit_mov(sym[1], XMM0, s);
+    emit_ucompisd(XMM0, XMM1, s);
+  }
+  char* str = new char;
+  sprintf(str, ".POS%d", thispos);
+  emit_je(str, s);
+  emit_mov("$0", RAX, s);
+  sprintf(str, ".POS%d", thispos + 1);
+  emit_jmp(str, s);
+  sprintf(str, ".POS%d", thispos);
+  emit_position(str, s);
+  emit_mov("$1", RAX, s);
+  sprintf(str, ".POS%d", thispos + 1);
+  emit_position(str, s);
+  emit_rmmov(RAX, rsp, RBP, s);
+  for (int i = 0; i < 6; i ++)
+  {
+    in_ex[i] = tmp_inex[i];
+    strcpy(sym[i], tmp_sym[i]);
+  }
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Neq_class::code(ostream &s) {
- 
+  bool tmp_inex[6];
+  char* tmp_sym[6] = {new char, new char, new char, new char, new char, new char};
+  for (int i = 0; i < 6; i ++)
+  {
+    tmp_inex[i] = in_ex[i];
+    in_ex[i] = 0;
+    strcpy(tmp_sym[i], sym[i]);
+  }
+  int thispos = pos;
+  pos += 2;
+  in_ex[0] = 1;
+  e1->code(s);
+  in_ex[0] = 0;
+  in_ex[1] = 1;
+  e2->code(s);
+  in_ex[1] = 0;
+  emit_sub("$8", RSP, s);
+  rsp -= 8;
+  if (e1->getType() == Int && e2->getType() == Int)
+  {
+    emit_mov(sym[0], RAX, s);
+    emit_mov(sym[1], RDX, s);
+    emit_cmp(RDX, RAX, s);
+  }
+  else
+  {
+    emit_mov(sym[0], XMM1, s);
+    emit_mov(sym[1], XMM0, s);
+    emit_ucompisd(XMM0, XMM1, s);
+  }
+  char* str = new char;
+  sprintf(str, ".POS%d", thispos);
+  emit_jne(str, s);
+  emit_mov("$0", RAX, s);
+  sprintf(str, ".POS%d", thispos + 1);
+  emit_jmp(str, s);
+  sprintf(str, ".POS%d", thispos);
+  emit_position(str, s);
+  emit_mov("$1", RAX, s);
+  sprintf(str, ".POS%d", thispos + 1);
+  emit_position(str, s);
+  emit_rmmov(RAX, rsp, RBP, s);
+  for (int i = 0; i < 6; i ++)
+  {
+    in_ex[i] = tmp_inex[i];
+    strcpy(sym[i], tmp_sym[i]);
+  }
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Ge_class::code(ostream &s) {
@@ -615,23 +1302,86 @@ void Bitor_class::code(ostream &s) {
 }
 
 void Const_int_class::code(ostream &s) {
- 
+  emit_sub("$8", RSP, s);
+  rsp -= 8;
+  char *str = new char;
+  strcpy(str, "$");
+  strcat(str, value->get_string());
+  emit_mov(str, RAX, s);
+  emit_rmmov(RAX, rsp, RBP, s);
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Const_string_class::code(ostream &s) {
- 
+  emit_sub("$8", RSP, s);
+  rsp -= 8;
+  s << MOV;
+  (StringEntry(value->get_string(), value->get_len(), 0)).code_ref(s);
+  s << COMMA << RAX << endl;
+  emit_rmmov(RAX, rsp, RBP, s);
+  char *str = new char;
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Const_float_class::code(ostream &s) {
- 
+  emit_sub("$8", RSP, s);
+  rsp -= 8;
+  double val = atof(value->get_string());
+  char *str = new char, *s0 = new char;
+  strcpy(str, "$0x");
+  for(int i=sizeof(val)-1;i>=0;i--)
+  {
+    sprintf(s0, "%02x", ((unsigned char*)&val)[i]);
+    strcat(str, s0);
+  }
+  emit_mov(str, RAX, s);
+  emit_rmmov(RAX, rsp, RBP, s);
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Const_bool_class::code(ostream &s) {
- 
+  emit_sub("$8", RSP, s);
+  rsp -= 8;
+  char *str = new char;
+  if (value)
+    strcpy(str, "$1");
+  else
+    strcpy(str, "$0");
+  emit_mov(str, RAX, s);
+  emit_rmmov(RAX, rsp, RBP, s);
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Object_class::code(ostream &s) {
- 
+  for (int i=0; i<6; i++)
+  {
+    if (in_ex[i])
+    {
+      if (objectEnv00.probe(var) != NULL)
+        strcpy(sym[i], objectEnv00.probe(var));
+      else if (objectEnv00.lookup(var) != NULL)
+        strcpy(sym[i], objectEnv00.lookup(var));
+      else
+      {
+        strcpy(sym[i], var->get_string());
+        strcat(sym[i], "(");
+        strcat(sym[i], RIP);
+        strcat(sym[i], ")");
+      }
+    }
+  }
 }
 
 void No_expr_class::code(ostream &s) {

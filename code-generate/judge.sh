@@ -3,8 +3,8 @@ cd test
 for filename in *.seal; do
     echo "--------Test using" $filename "--------"
     name=${filename//.seal}
-    ../cgen $filename -o $name.s
-    gcc $name.s -o $name
+    ../cgen $filename -o ../$name.s
+    gcc ../$name.s -no-pie -o $name
     ./$name > tempfile
     ../test-answer/$name > tempfile2
     diff tempfile tempfile2 > /dev/null
@@ -13,7 +13,7 @@ for filename in *.seal; do
     else
         echo NOT passed
     fi
-    rm -f $name
+    rm -f $name ../$name.s
 done
 
 rm -f tempfile tempfile2
