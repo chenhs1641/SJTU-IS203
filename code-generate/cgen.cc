@@ -20,7 +20,7 @@ static char *CALL_XMM[] = {XMM0, XMM1, XMM2, XMM3};
 void cgen_helper(Decls decls, ostream& s);
 void code(Decls decls, ostream& s);
 
-int rsp = -56, pos = 0;
+int rsp = -56, pos = 0, bpos = 0, cpos = 0;
 char *sym[6] = {new char, new char, new char, new char, new char, new char};
 bool in_ex[6] = {0, 0, 0, 0, 0, 0};
 
@@ -560,13 +560,13 @@ void StmtBlock_class::code(ostream &s){
     char* str = new char;
     sprintf(str, "%d(%%rbp)", rsp);
     objectEnv00.addid(vars->nth(i)->getName(), str);
-    // vars->nth(i)->***
-    // do sth;
-    // bind name and rsp!!!
   }
+  int thisbpos = bpos, thiscpos = cpos;
   for (int i = stmts->first(); stmts->more(i); i = stmts->next(i))
   {
     stmts->nth(i)->code(s);
+    bpos = thisbpos;
+    cpos = thiscpos;
   }
 }
 
@@ -597,6 +597,8 @@ void IfStmt_class::code(ostream &s) {
 
 void WhileStmt_class::code(ostream &s) {
   int thispos = pos;
+  bpos = pos + 1;
+  cpos = pos;
   pos += 2;
   char* str = new char;
   sprintf(str, ".POS%d", thispos);
@@ -619,6 +621,8 @@ void WhileStmt_class::code(ostream &s) {
 
 void ForStmt_class::code(ostream &s) {
   int thispos = pos;
+  bpos = pos + 2;
+  cpos = pos + 1;
   pos += 3;
   initexpr->code(s);
   char* str = new char;
@@ -666,10 +670,15 @@ void ReturnStmt_class::code(ostream &s) {
 }
 
 void ContinueStmt_class::code(ostream &s) {
- 
+  char* str = new char;
+  sprintf(str, ".POS%d", cpos);
+  emit_jmp(str, s);
 }
 
 void BreakStmt_class::code(ostream &s) {
+  char* str = new char;
+  sprintf(str, ".POS%d", bpos);
+  emit_jmp(str, s);
 }
 
 void Call_class::code(ostream &s) {
@@ -1064,7 +1073,32 @@ void Mod_class::code(ostream &s) {
 }
 
 void Neg_class::code(ostream &s) {
- 
+  bool tmp_inex[6];
+  char* tmp_sym[6] = {new char, new char, new char, new char, new char, new char};
+  for (int i = 0; i < 6; i ++)
+  {
+    tmp_inex[i] = in_ex[i];
+    in_ex[i] = 0;
+    strcpy(tmp_sym[i], sym[i]);
+  }
+  in_ex[0] = 1;
+  e1->code(s);
+  in_ex[0] = 0;
+  emit_sub("$8", RSP, s);
+  rsp -= 8;
+  emit_mov(sym[0], RAX, s);
+  emit_neg(RAX, s);
+  emit_rmmov(RAX, rsp, RBP, s);
+  for (int i = 0; i < 6; i ++)
+  {
+    in_ex[i] = tmp_inex[i];
+    strcpy(sym[i], tmp_sym[i]);
+  }
+  char* str = new char;
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Lt_class::code(ostream &s) {
@@ -1086,9 +1120,30 @@ void Lt_class::code(ostream &s) {
   in_ex[1] = 0;
   emit_sub("$8", RSP, s);
   rsp -= 8;
-  emit_mov(sym[0], RAX, s);
-  emit_mov(sym[1], RDX, s);
-  emit_cmp(RDX, RAX, s);
+  if (e1->getType() == Int && e2->getType() == Int)
+  {
+    emit_mov(sym[0], RAX, s);
+    emit_mov(sym[1], RDX, s);
+    emit_cmp(RDX, RAX, s);
+  }
+  else
+  {
+    if (e1->getType() == Int)
+    {
+      emit_mov(sym[0], RAX, s);
+      emit_int_to_float(RAX, XMM1, s);
+    }
+    else
+      emit_mov(sym[0], XMM1, s);
+    if (e2->getType() == Int)
+    {
+      emit_mov(sym[1], RAX, s);
+      emit_int_to_float(RAX, XMM0, s);
+    }
+    else
+      emit_movsd(sym[1], XMM0, s);
+    emit_ucompisd(XMM0, XMM1, s);
+  }
   char* str = new char;
   sprintf(str, ".POS%d", thispos);
   emit_jl(str, s);
@@ -1131,9 +1186,30 @@ void Le_class::code(ostream &s) {
   in_ex[1] = 0;
   emit_sub("$8", RSP, s);
   rsp -= 8;
-  emit_mov(sym[0], RAX, s);
-  emit_mov(sym[1], RDX, s);
-  emit_cmp(RDX, RAX, s);
+  if (e1->getType() == Int && e2->getType() == Int)
+  {
+    emit_mov(sym[0], RAX, s);
+    emit_mov(sym[1], RDX, s);
+    emit_cmp(RDX, RAX, s);
+  }
+  else
+  {
+    if (e1->getType() == Int)
+    {
+      emit_mov(sym[0], RAX, s);
+      emit_int_to_float(RAX, XMM1, s);
+    }
+    else
+      emit_mov(sym[0], XMM1, s);
+    if (e2->getType() == Int)
+    {
+      emit_mov(sym[1], RAX, s);
+      emit_int_to_float(RAX, XMM0, s);
+    }
+    else
+      emit_movsd(sym[1], XMM0, s);
+    emit_ucompisd(XMM0, XMM1, s);
+  }
   char* str = new char;
   sprintf(str, ".POS%d", thispos);
   emit_jle(str, s);
@@ -1158,7 +1234,7 @@ void Le_class::code(ostream &s) {
 }
 
 void Equ_class::code(ostream &s) {
-    bool tmp_inex[6];
+  bool tmp_inex[6];
   char* tmp_sym[6] = {new char, new char, new char, new char, new char, new char};
   for (int i = 0; i < 6; i ++)
   {
@@ -1184,8 +1260,20 @@ void Equ_class::code(ostream &s) {
   }
   else
   {
-    emit_mov(sym[0], XMM1, s);
-    emit_mov(sym[1], XMM0, s);
+    if (e1->getType() == Int)
+    {
+      emit_mov(sym[0], RAX, s);
+      emit_int_to_float(RAX, XMM1, s);
+    }
+    else
+      emit_mov(sym[0], XMM1, s);
+    if (e2->getType() == Int)
+    {
+      emit_mov(sym[1], RAX, s);
+      emit_int_to_float(RAX, XMM0, s);
+    }
+    else
+      emit_movsd(sym[1], XMM0, s);
     emit_ucompisd(XMM0, XMM1, s);
   }
   char* str = new char;
@@ -1238,8 +1326,20 @@ void Neq_class::code(ostream &s) {
   }
   else
   {
-    emit_mov(sym[0], XMM1, s);
-    emit_mov(sym[1], XMM0, s);
+    if (e1->getType() == Int)
+    {
+      emit_mov(sym[0], RAX, s);
+      emit_int_to_float(RAX, XMM1, s);
+    }
+    else
+      emit_mov(sym[0], XMM1, s);
+    if (e2->getType() == Int)
+    {
+      emit_mov(sym[1], RAX, s);
+      emit_int_to_float(RAX, XMM0, s);
+    }
+    else
+      emit_movsd(sym[1], XMM0, s);
     emit_ucompisd(XMM0, XMM1, s);
   }
   char* str = new char;
@@ -1266,39 +1366,359 @@ void Neq_class::code(ostream &s) {
 }
 
 void Ge_class::code(ostream &s) {
- 
+  bool tmp_inex[6];
+  char* tmp_sym[6] = {new char, new char, new char, new char, new char, new char};
+  for (int i = 0; i < 6; i ++)
+  {
+    tmp_inex[i] = in_ex[i];
+    in_ex[i] = 0;
+    strcpy(tmp_sym[i], sym[i]);
+  }
+  int thispos = pos;
+  pos += 2;
+  in_ex[0] = 1;
+  e1->code(s);
+  in_ex[0] = 0;
+  in_ex[1] = 1;
+  e2->code(s);
+  in_ex[1] = 0;
+  emit_sub("$8", RSP, s);
+  rsp -= 8;
+  if (e1->getType() == Int && e2->getType() == Int)
+  {
+    emit_mov(sym[0], RAX, s);
+    emit_mov(sym[1], RDX, s);
+    emit_cmp(RDX, RAX, s);
+  }
+  else
+  {
+    if (e1->getType() == Int)
+    {
+      emit_mov(sym[0], RAX, s);
+      emit_int_to_float(RAX, XMM1, s);
+    }
+    else
+      emit_mov(sym[0], XMM1, s);
+    if (e2->getType() == Int)
+    {
+      emit_mov(sym[1], RAX, s);
+      emit_int_to_float(RAX, XMM0, s);
+    }
+    else
+      emit_movsd(sym[1], XMM0, s);
+    emit_ucompisd(XMM0, XMM1, s);
+  }
+  char* str = new char;
+  sprintf(str, ".POS%d", thispos);
+  emit_jae(str, s);
+  emit_mov("$0", RAX, s);
+  sprintf(str, ".POS%d", thispos + 1);
+  emit_jmp(str, s);
+  sprintf(str, ".POS%d", thispos);
+  emit_position(str, s);
+  emit_mov("$1", RAX, s);
+  sprintf(str, ".POS%d", thispos + 1);
+  emit_position(str, s);
+  emit_rmmov(RAX, rsp, RBP, s);
+  for (int i = 0; i < 6; i ++)
+  {
+    in_ex[i] = tmp_inex[i];
+    strcpy(sym[i], tmp_sym[i]);
+  }
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Gt_class::code(ostream &s) {
- 
+  bool tmp_inex[6];
+  char* tmp_sym[6] = {new char, new char, new char, new char, new char, new char};
+  for (int i = 0; i < 6; i ++)
+  {
+    tmp_inex[i] = in_ex[i];
+    in_ex[i] = 0;
+    strcpy(tmp_sym[i], sym[i]);
+  }
+  int thispos = pos;
+  pos += 2;
+  in_ex[0] = 1;
+  e1->code(s);
+  in_ex[0] = 0;
+  in_ex[1] = 1;
+  e2->code(s);
+  in_ex[1] = 0;
+  emit_sub("$8", RSP, s);
+  rsp -= 8;
+  if (e1->getType() == Int && e2->getType() == Int)
+  {
+    emit_mov(sym[0], RAX, s);
+    emit_mov(sym[1], RDX, s);
+    emit_cmp(RDX, RAX, s);
+  }
+  else
+  {
+    if (e1->getType() == Int)
+    {
+      emit_mov(sym[0], RAX, s);
+      emit_int_to_float(RAX, XMM1, s);
+    }
+    else
+      emit_mov(sym[0], XMM1, s);
+    if (e2->getType() == Int)
+    {
+      emit_mov(sym[1], RAX, s);
+      emit_int_to_float(RAX, XMM0, s);
+    }
+    else
+      emit_movsd(sym[1], XMM0, s);
+    emit_ucompisd(XMM0, XMM1, s);
+  }
+  char* str = new char;
+  sprintf(str, ".POS%d", thispos);
+  emit_ja(str, s);
+  emit_mov("$0", RAX, s);
+  sprintf(str, ".POS%d", thispos + 1);
+  emit_jmp(str, s);
+  sprintf(str, ".POS%d", thispos);
+  emit_position(str, s);
+  emit_mov("$1", RAX, s);
+  sprintf(str, ".POS%d", thispos + 1);
+  emit_position(str, s);
+  emit_rmmov(RAX, rsp, RBP, s);
+  for (int i = 0; i < 6; i ++)
+  {
+    in_ex[i] = tmp_inex[i];
+    strcpy(sym[i], tmp_sym[i]);
+  }
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void And_class::code(ostream &s) {
- 
+  bool tmp_inex[6];
+  char* tmp_sym[6] = {new char, new char, new char, new char, new char, new char};
+  for (int i = 0; i < 6; i ++)
+  {
+    tmp_inex[i] = in_ex[i];
+    in_ex[i] = 0;
+    strcpy(tmp_sym[i], sym[i]);
+  }
+  in_ex[0] = 1;
+  e1->code(s);
+  in_ex[0] = 0;
+  in_ex[1] = 1;
+  e2->code(s);
+  in_ex[1] = 0;
+  emit_sub("$8", RSP, s);
+  rsp -= 8;
+  emit_mov(sym[0], RAX, s);
+  emit_mov(sym[1], RDX, s);
+  emit_and(RAX, RDX, s);
+  emit_rmmov(RDX, rsp, RBP, s);
+  for (int i = 0; i < 6; i ++)
+  {
+    in_ex[i] = tmp_inex[i];
+    strcpy(sym[i], tmp_sym[i]);
+  }
+  char* str = new char;
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Or_class::code(ostream &s) {
- 
+  bool tmp_inex[6];
+  char* tmp_sym[6] = {new char, new char, new char, new char, new char, new char};
+  for (int i = 0; i < 6; i ++)
+  {
+    tmp_inex[i] = in_ex[i];
+    in_ex[i] = 0;
+    strcpy(tmp_sym[i], sym[i]);
+  }
+  in_ex[0] = 1;
+  e1->code(s);
+  in_ex[0] = 0;
+  in_ex[1] = 1;
+  e2->code(s);
+  in_ex[1] = 0;
+  emit_sub("$8", RSP, s);
+  rsp -= 8;
+  emit_mov(sym[0], RAX, s);
+  emit_mov(sym[1], RDX, s);
+  emit_or(RAX, RDX, s);
+  emit_rmmov(RDX, rsp, RBP, s);
+  for (int i = 0; i < 6; i ++)
+  {
+    in_ex[i] = tmp_inex[i];
+    strcpy(sym[i], tmp_sym[i]);
+  }
+  char* str = new char;
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Xor_class::code(ostream &s) {
- 
+  bool tmp_inex[6];
+  char* tmp_sym[6] = {new char, new char, new char, new char, new char, new char};
+  for (int i = 0; i < 6; i ++)
+  {
+    tmp_inex[i] = in_ex[i];
+    in_ex[i] = 0;
+    strcpy(tmp_sym[i], sym[i]);
+  }
+  in_ex[0] = 1;
+  e1->code(s);
+  in_ex[0] = 0;
+  in_ex[1] = 1;
+  e2->code(s);
+  in_ex[1] = 0;
+  emit_sub("$8", RSP, s);
+  rsp -= 8;
+  emit_mov(sym[0], RAX, s);
+  emit_mov(sym[1], RDX, s);
+  emit_xor(RAX, RDX, s);
+  emit_rmmov(RDX, rsp, RBP, s);
+  for (int i = 0; i < 6; i ++)
+  {
+    in_ex[i] = tmp_inex[i];
+    strcpy(sym[i], tmp_sym[i]);
+  }
+  char* str = new char;
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Not_class::code(ostream &s) {
- 
+  bool tmp_inex[6];
+  char* tmp_sym[6] = {new char, new char, new char, new char, new char, new char};
+  for (int i = 0; i < 6; i ++)
+  {
+    tmp_inex[i] = in_ex[i];
+    in_ex[i] = 0;
+    strcpy(tmp_sym[i], sym[i]);
+  }
+  in_ex[0] = 1;
+  e1->code(s);
+  in_ex[0] = 0;
+  emit_sub("$8", RSP, s);
+  rsp -= 8;
+  emit_mov(sym[0], RAX, s);
+  emit_mov("$0x0000000000000001", RDX, s);
+  emit_xor(RDX, RAX, s);
+  emit_rmmov(RAX, rsp, RBP, s);
+  for (int i = 0; i < 6; i ++)
+  {
+    in_ex[i] = tmp_inex[i];
+    strcpy(sym[i], tmp_sym[i]);
+  }
+  char* str = new char;
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Bitnot_class::code(ostream &s) {
-
+  bool tmp_inex[6];
+  char* tmp_sym[6] = {new char, new char, new char, new char, new char, new char};
+  for (int i = 0; i < 6; i ++)
+  {
+    tmp_inex[i] = in_ex[i];
+    in_ex[i] = 0;
+    strcpy(tmp_sym[i], sym[i]);
+  }
+  in_ex[0] = 1;
+  e1->code(s);
+  in_ex[0] = 0;
+  emit_sub("$8", RSP, s);
+  rsp -= 8;
+  emit_mov(sym[0], RAX, s);
+  emit_not(RAX, s);
+  emit_rmmov(RAX, rsp, RBP, s);
+  for (int i = 0; i < 6; i ++)
+  {
+    in_ex[i] = tmp_inex[i];
+    strcpy(sym[i], tmp_sym[i]);
+  }
+  char* str = new char;
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Bitand_class::code(ostream &s) {
-
+  bool tmp_inex[6];
+  char* tmp_sym[6] = {new char, new char, new char, new char, new char, new char};
+  for (int i = 0; i < 6; i ++)
+  {
+    tmp_inex[i] = in_ex[i];
+    in_ex[i] = 0;
+    strcpy(tmp_sym[i], sym[i]);
+  }
+  in_ex[0] = 1;
+  e1->code(s);
+  in_ex[0] = 0;
+  in_ex[1] = 1;
+  e2->code(s);
+  in_ex[1] = 0;
+  emit_sub("$8", RSP, s);
+  rsp -= 8;
+  emit_mov(sym[0], RAX, s);
+  emit_mov(sym[1], RDX, s);
+  emit_and(RAX, RDX, s);
+  emit_rmmov(RDX, rsp, RBP, s);
+  for (int i = 0; i < 6; i ++)
+  {
+    in_ex[i] = tmp_inex[i];
+    strcpy(sym[i], tmp_sym[i]);
+  }
+  char* str = new char;
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Bitor_class::code(ostream &s) {
- 
+  bool tmp_inex[6];
+  char* tmp_sym[6] = {new char, new char, new char, new char, new char, new char};
+  for (int i = 0; i < 6; i ++)
+  {
+    tmp_inex[i] = in_ex[i];
+    in_ex[i] = 0;
+    strcpy(tmp_sym[i], sym[i]);
+  }
+  in_ex[0] = 1;
+  e1->code(s);
+  in_ex[0] = 0;
+  in_ex[1] = 1;
+  e2->code(s);
+  in_ex[1] = 0;
+  emit_sub("$8", RSP, s);
+  rsp -= 8;
+  emit_mov(sym[0], RAX, s);
+  emit_mov(sym[1], RDX, s);
+  emit_or(RAX, RDX, s);
+  emit_rmmov(RDX, rsp, RBP, s);
+  for (int i = 0; i < 6; i ++)
+  {
+    in_ex[i] = tmp_inex[i];
+    strcpy(sym[i], tmp_sym[i]);
+  }
+  char* str = new char;
+  sprintf(str, "%d(%%rbp)", rsp);
+  for (int i = 0;i < 6;i ++)
+    if (in_ex[i])
+      strcpy(sym[i], str);
 }
 
 void Const_int_class::code(ostream &s) {
