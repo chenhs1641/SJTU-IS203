@@ -4,6 +4,11 @@ func main() Void{
     {
         1;
         break;
+        printf("!111");
+        printf("22222");
+        "!111";
+        "22222";
+        "22222";
         continue;
         2;
     }

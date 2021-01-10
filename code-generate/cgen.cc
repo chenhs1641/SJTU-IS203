@@ -1739,7 +1739,11 @@ void Const_string_class::code(ostream &s) {
   emit_sub("$8", RSP, s);
   rsp -= 8;
   s << MOV;
-  (StringEntry(value->get_string(), value->get_len(), 0)).code_ref(s);
+  int index;
+  for (int i = stringtable.first(); stringtable.more(i); i = stringtable.next(i))
+    if (stringtable.lookup(i)->get_string() == value->get_string())
+      index = i;
+  (StringEntry(value->get_string(), value->get_len(), index)).code_ref(s);
   s << COMMA << RAX << endl;
   emit_rmmov(RAX, rsp, RBP, s);
   char *str = new char;
