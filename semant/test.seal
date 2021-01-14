@@ -58,6 +58,21 @@ var a Int;
     return x;
 }
 
+func main() Void {
+    if true {
+        ;;;;
+        return;
+    }
+    while true {
+        ;;;;;
+        return;
+    }
+    for ;; {
+        ;;;;;
+        return;
+    }
+}
+
 func printf() Void{
     1 + true;
     1- true;

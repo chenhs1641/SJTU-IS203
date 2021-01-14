@@ -18,6 +18,7 @@ typedef SymbolTable<Symbol, Decl> ObjectEnvironment2; // name, function
 ObjectEnvironment2 objectEnv2;
 
 int flag = 0; // break/continue in loop?
+int flag1 = 0; // return in calldecl?
 bool flag0 = 0; // func have return?
 
 ///////////////////////////////////////////////
@@ -202,6 +203,7 @@ void StmtBlock_class::check(Symbol type) {
 }
 
 void IfStmt_class::check(Symbol type) {
+    flag1 ++;
     Symbol value_type = condition->checkType();
     if (!sameType(value_type, Bool))
         semant_error(this)<<"Condition must be a Bool, got "<<value_type<<"\n";
@@ -211,10 +213,12 @@ void IfStmt_class::check(Symbol type) {
     objectEnv.enterscope();
     elseexpr->check(type);
     objectEnv.exitscope();
+    flag1 --;
 }
 
 void WhileStmt_class::check(Symbol type) {
     flag ++;
+    flag1 ++;
     Symbol value_type = condition->checkType();
     if (!sameType(value_type, Bool))
         semant_error(this)<<"Condition must be a Bool, got "<<value_type<<"\n";
@@ -222,10 +226,12 @@ void WhileStmt_class::check(Symbol type) {
     body->check(type);
     objectEnv.exitscope();
     flag --;
+    flag1 --;
 }
 
 void ForStmt_class::check(Symbol type) {
     flag ++;
+    flag1 ++;
     if (!initexpr->is_empty_Expr())
         initexpr->checkType();
     if (!condition->is_empty_Expr())
@@ -240,10 +246,11 @@ void ForStmt_class::check(Symbol type) {
     body->check(type);
     objectEnv.exitscope();
     flag --;
+    flag1 --;
 }
 
 void ReturnStmt_class::check(Symbol type) {
-    flag0 = 0;
+    if (flag1 == 0) flag0 = 0;
     Symbol value_type = value->checkType();
     if (!sameType(value_type, type)) semant_error(this)<<"Returns "<<value_type<<" , but need "<<type<<"\n";
 }
